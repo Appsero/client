@@ -1,0 +1,14 @@
+{
+    "name": "appsero/client",
+    "description": "AppSero Insights Client",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tareq Hasan",
+            "email": "tareq@appsero.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
