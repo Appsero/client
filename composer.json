@@ -1,6 +1,6 @@
 {
     "name": "appsero/client",
-    "description": "AppSero Insights Client",
+    "description": "AppSero Client",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -10,5 +10,10 @@
         }
     ],
     "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "AppSero\\": "src/"
+        }
+    },
     "require": {}
 }
