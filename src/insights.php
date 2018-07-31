@@ -60,26 +60,37 @@ class Insights {
      * @param string  $file main plugin file path
      * @param string  $notice the notice texts if needs customizing
      */
-    public function __construct( $hash, $name, $file, $args = array() ) {
+    public function __construct( $hash, $name, $file, $theme = false, $notice = '' ) {
         $this->hash     = $hash;
         $this->name     = $name;
-        $this->basename = plugin_basename( $file );
-
-        list( $this->slug, $filename) = explode( '/', $this->basename );
-        // $this->notice   = $notice;
+        $this->notice   = $notice;
 
         // tracking notice
         add_action( 'admin_notices', array( $this, 'admin_notice' ) );
         add_action( 'admin_init', array( $this, 'handle_optin_optout' ) );
 
-        // plugin deactivate actions
-        if ( ! $this->is_local_server() ) {
-            add_action( 'plugin_action_links_' . $this->basename, array( $this, 'plugin_action_links' ) );
-            add_action( 'admin_footer', array( $this, 'deactivate_scripts' ) );
-        }
-
         // clean events and options on deactivation
-        register_deactivation_hook( $file, array( $this, 'deactivate_plugin' ) );
+        if ( $theme ) {
+
+            $this->basename = str_replace( WP_CONTENT_DIR . '/themes/', '', $file );
+            list( $this->slug, $mainfile) = explode( '/', $this->basename );
+
+            add_action( 'switch_theme', array( $this, 'deactivation_cleanup' ) );
+
+        } else {
+
+            $this->basename = plugin_basename( $file );
+
+            list( $this->slug, $mainfile) = explode( '/', $this->basename );
+
+            // plugin deactivate popup
+            if ( ! $this->is_local_server() ) {
+                add_action( 'plugin_action_links_' . $this->basename, array( $this, 'plugin_action_links' ) );
+                add_action( 'admin_footer', array( $this, 'deactivate_scripts' ) );
+            }
+
+            register_deactivation_hook( $file, array( $this, 'deactivation_cleanup' ) );
+        }
 
         // uninstall reason
         add_action( 'wp_ajax_' . $this->slug . '_submit-uninstall-reason', array( $this, 'uninstall_reason_submission' ) );
@@ -87,7 +98,7 @@ class Insights {
         // cron events
         add_action( 'cron_schedules', array( $this, 'add_weekly_schedule' ) );
         add_action( $this->slug . '_tracker_send_event', array( $this, 'send_tracking_data' ) );
-        add_action( 'admin_init', array( $this, 'send_tracking_data' ) ); // test
+        // add_action( 'admin_init', array( $this, 'send_tracking_data' ) ); // test
     }
 
     /**
@@ -139,19 +150,16 @@ class Insights {
     private function send_request( $params, $route ) {
         $url = trailingslashit(  $this->endpoint() ) . $route;
 
-        error_log('sending_request ' . $url . ': '. print_r( $params, true ) );
-
         $response = wp_remote_post( $url, array(
-                'method'      => 'POST',
-                'timeout'     => 45,
-                'redirection' => 5,
-                'httpversion' => '1.0',
-                'blocking'    => false,
-                'headers'     => array( 'user-agent' => 'AppSero/' . md5( esc_url( home_url() ) ) . ';' ),
-                'body'        => $params,
-                'cookies'     => array()
-            )
-        );
+            'method'      => 'POST',
+            'timeout'     => 30,
+            'redirection' => 5,
+            'httpversion' => '1.0',
+            'blocking'    => false,
+            'headers'     => array( 'user-agent' => 'AppSero/' . md5( esc_url( home_url() ) ) . ';' ),
+            'body'        => $params,
+            'cookies'     => array()
+        ) );
 
         return $response;
     }
@@ -314,7 +322,7 @@ class Insights {
                 $notice = $this->notice;
             }
 
-            $notice .= ' (<a class="insights-data-we-collect" href="#">' . __( 'what we collect', 'textdomain' ) . '</a>)';
+            $notice .= ' (<a class="' . $this->slug . '-insights-data-we-collect" href="#">' . __( 'what we collect', 'textdomain' ) . '</a>)';
             $notice .= '<p class="description" style="display:none;">' . implode( ', ', $this->data_we_collect() ) . '. No sensitive data is tracked.</p>';
 
             echo '<div class="updated"><p>';
@@ -324,7 +332,7 @@ class Insights {
                 echo '&nbsp;<a href="' . esc_url( $optout_url ) . '" class="button-secondary button-large">' . __( 'No thanks', 'textdomain' ) . '</a>';
             echo '</p></div>';
 
-            echo "<script type='text/javascript'>jQuery('.insights-data-we-collect').on('click', function(e) {
+            echo "<script type='text/javascript'>jQuery('." . $this->slug . "-insights-data-we-collect').on('click', function(e) {
                     e.preventDefault();
                     jQuery(this).parents('.updated').find('p.description').slideToggle('fast');
                 });
@@ -510,7 +518,7 @@ class Insights {
      *
      * @return void
      */
-    public function deactivate_plugin() {
+    public function deactivation_cleanup() {
         $this->clear_schedule_event();
 
         delete_option( $this->slug . '_allow_tracking' );
