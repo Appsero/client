@@ -45,7 +45,6 @@ The `AppSero\Insights` class has *five* parameters:
 
 ```php
 new AppSero\Insights( $hash, $name, $file, $theme, $notice );
-}
 ```
 
 - **hash** (*string*, *required*) - The unique identifier for a plugin or theme.
