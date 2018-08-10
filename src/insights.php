@@ -11,6 +11,13 @@ namespace AppSero;
 class Insights {
 
     /**
+     * The client version
+     *
+     * @var string
+     */
+    public $version = '1.0';
+
+    /**
      * Hash identifier of the plugin
      *
      * @var string
@@ -39,11 +46,32 @@ class Insights {
     public $basename;
 
     /**
+     * The plugin/theme file path
+     *
+     * @var string
+     */
+    public $file;
+
+    /**
      * The notice text
      *
      * @var string
      */
     public $notice;
+
+    /**
+     * Wheather to the notice or not
+     *
+     * @var boolean
+     */
+    protected $show_notice = true;
+
+    /**
+     * If extra data needs to be sent
+     *
+     * @var array
+     */
+    protected $extra_data = array();
 
     /**
      * URL to the API endpoint
@@ -58,39 +86,98 @@ class Insights {
      * @param string  $slug slug of the plugin
      * @param string  $name readable name of the plugin
      * @param string  $file main plugin file path
-     * @param string  $notice the notice texts if needs customizing
      */
-    public function __construct( $hash, $name, $file, $theme = false, $notice = '' ) {
-        $this->hash     = $hash;
-        $this->name     = $name;
-        $this->notice   = $notice;
+    public function __construct( $hash, $name, $file ) {
+        $this->hash = $hash;
+        $this->name = $name;
+        $this->file = $file;
+    }
 
-        // tracking notice
-        add_action( 'admin_notices', array( $this, 'admin_notice' ) );
-        add_action( 'admin_init', array( $this, 'handle_optin_optout' ) );
+    /**
+     * Don't show the notice
+     *
+     * @return \self
+     */
+    public function hide_notice() {
+        $this->show_notice = false;
 
-        // clean events and options on deactivation
-        if ( $theme ) {
+        return $this;
+    }
 
-            $this->basename = str_replace( WP_CONTENT_DIR . '/themes/', '', $file );
-            list( $this->slug, $mainfile) = explode( '/', $this->basename );
+    /**
+     * Add extra data if needed
+     *
+     * @param array $data
+     *
+     * @return \self
+     */
+    public function add_extra( $data = array() ) {
+        $this->extra_data = $data;
 
-            add_action( 'switch_theme', array( $this, 'deactivation_cleanup' ) );
+        return $this;
+    }
 
-        } else {
+    /**
+     * Set custom notice text
+     *
+     * @param  string $text
+     *
+     * @return \self
+     */
+    public function notice( $text ) {
+        $this->notice = $text;
 
-            $this->basename = plugin_basename( $file );
+        return $this;
+    }
 
-            list( $this->slug, $mainfile) = explode( '/', $this->basename );
+    /**
+     * Initialize theme hooks
+     *
+     * @return void
+     */
+    public function init_theme() {
+        $this->basename = str_replace( WP_CONTENT_DIR . '/themes/', '', $this->file );
+        list( $this->slug, $mainfile) = explode( '/', $this->basename );
 
-            // plugin deactivate popup
-            if ( ! $this->is_local_server() ) {
-                add_action( 'plugin_action_links_' . $this->basename, array( $this, 'plugin_action_links' ) );
-                add_action( 'admin_footer', array( $this, 'deactivate_scripts' ) );
-            }
+        $this->init_common();
 
-            register_deactivation_hook( $file, array( $this, 'deactivation_cleanup' ) );
+        add_action( 'switch_theme', array( $this, 'deactivation_cleanup' ) );
+    }
+
+    /**
+     * Initialize plugin hooks
+     *
+     * @return void
+     */
+    public function init_plugin() {
+        $this->basename = plugin_basename( $this->file );
+
+        list( $this->slug, $mainfile) = explode( '/', $this->basename );
+
+        // plugin deactivate popup
+        if ( ! $this->is_local_server() ) {
+            add_action( 'plugin_action_links_' . $this->basename, array( $this, 'plugin_action_links' ) );
+            add_action( 'admin_footer', array( $this, 'deactivate_scripts' ) );
         }
+
+        $this->init_common();
+
+        register_deactivation_hook( $this->file, array( $this, 'deactivation_cleanup' ) );
+    }
+
+    /**
+     * Initialize common hooks
+     *
+     * @return void
+     */
+    protected function init_common() {
+
+        if ( $this->show_notice ) {
+            // tracking notice
+            add_action( 'admin_notices', array( $this, 'admin_notice' ) );
+        }
+
+        add_action( 'admin_init', array( $this, 'handle_optin_optout' ) );
 
         // uninstall reason
         add_action( 'wp_ajax_' . $this->slug . '_submit-uninstall-reason', array( $this, 'uninstall_reason_submission' ) );
@@ -157,7 +244,7 @@ class Insights {
             'httpversion' => '1.0',
             'blocking'    => false,
             'headers'     => array( 'user-agent' => 'AppSero/' . md5( esc_url( home_url() ) ) . ';' ),
-            'body'        => $params,
+            'body'        => array_merge( $params, array( 'client' => $this->version ) ),
             'cookies'     => array()
         ) );
 
@@ -207,7 +294,7 @@ class Insights {
      * @return mixed
      */
     protected function get_extra_data() {
-        return false;
+        return $this->extra_data;
     }
 
     /**
@@ -349,26 +436,44 @@ class Insights {
     public function handle_optin_optout() {
 
         if ( isset( $_GET[ $this->slug . '_tracker_optin' ] ) && $_GET[ $this->slug . '_tracker_optin' ] == 'true' ) {
-            update_option( $this->slug . '_allow_tracking', 'yes' );
-            update_option( $this->slug . '_tracking_notice', 'hide' );
-
-            $this->clear_schedule_event();
-            $this->schedule_event();
-            $this->send_tracking_data();
+            $this->optin();
 
             wp_redirect( remove_query_arg( $this->slug . '_tracker_optin' ) );
             exit;
         }
 
         if ( isset( $_GET[ $this->slug . '_tracker_optout' ] ) && $_GET[ $this->slug . '_tracker_optout' ] == 'true' ) {
-            update_option( $this->slug . '_allow_tracking', 'no' );
-            update_option( $this->slug . '_tracking_notice', 'hide' );
-
-            $this->clear_schedule_event();
+            $this->optout();
 
             wp_redirect( remove_query_arg( $this->slug . '_tracker_optout' ) );
             exit;
         }
+    }
+
+    /**
+     * Tracking optin
+     *
+     * @return void
+     */
+    public function optin() {
+        update_option( $this->slug . '_allow_tracking', 'yes' );
+        update_option( $this->slug . '_tracking_notice', 'hide' );
+
+        $this->clear_schedule_event();
+        $this->schedule_event();
+        $this->send_tracking_data();
+    }
+
+    /**
+     * Optout from tracking
+     *
+     * @return void
+     */
+    public function optout() {
+        update_option( $this->slug . '_allow_tracking', 'no' );
+        update_option( $this->slug . '_tracking_notice', 'hide' );
+
+        $this->clear_schedule_event();
     }
 
     /**
