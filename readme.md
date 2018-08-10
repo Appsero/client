@@ -69,12 +69,12 @@ Example code that needs to be used on your main plugin file.
  */
 function appsero_init_tracker_appsero_test() {
 
-  if ( ! class_exists( 'AppSero\Insights' ) ) {
+    if ( ! class_exists( 'AppSero\Insights' ) ) {
       require_once __DIR__ . '/appsero/src/insights.php';
-  }
+    }
 
-  $insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044891', 'Akismet', __FILE__ );
-  $insights->init_plugin();
+    $insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044891', 'Akismet', __FILE__ );
+    $insights->init_plugin();
 }
 
 add_action( 'init', 'appsero_init_tracker_appsero_test' );
@@ -92,12 +92,12 @@ Example code that needs to be used on your themes `functions.php` file.
  */
 function appsero_init_tracker_twenty_twelve() {
 
-	if ( ! class_exists( 'AppSero\Insights' ) ) {
-		require_once __DIR__ . '/appsero/src/insights.php';
-	}
+    if ( ! class_exists( 'AppSero\Insights' ) ) {
+        require_once __DIR__ . '/appsero/src/insights.php';
+    }
 
-	$insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
-	$insights->init_theme();
+    $insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
+    $insights->init_theme();
 }
 
 add_action( 'init', 'appsero_init_tracker_twenty_twelve' );
@@ -129,8 +129,8 @@ You can add extra metadata from your theme or plugin. In that case, the **keys**
 
 ```php
 $insights->add_extra(array(
-  'key'     => 'value',
-  'another' => 'another_value'
+    'key'     => 'value',
+    'another' => 'another_value'
 ));
 ```
 
@@ -153,11 +153,11 @@ You can chain the methods as well.
 $insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
 
 $insights->notice('Please allow us to track the usage')
-	->add_extra([
-		'key'   => 'value',
-		'value' => 'key'
-	])
-	->init_plugin();
+    ->add_extra([
+        'key'   => 'value',
+        'value' => 'key'
+    ])
+    ->init_plugin();
 ```
 
 ---
@@ -170,7 +170,7 @@ In some cases you wouldn't want to show the optin message, but forcefully opt-in
 $insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
 
 $insights->hide_notice()
-	->init_plugin();
+    ->init_plugin();
 
 // somewhere in your code, opt-in the user forcefully
 // execute this only once
