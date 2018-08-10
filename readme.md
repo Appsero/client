@@ -41,21 +41,19 @@ require __DIR__ . '/appsero/src/insights.php';
 
 AppSero can be used in both themes and plugins.
 
-The `AppSero\Insights` class has *five* parameters:
+The `AppSero\Insights` class has *three* parameters:
 
 ```php
-new AppSero\Insights( $hash, $name, $file, $theme, $notice );
+$insights = new AppSero\Insights( $hash, $name, $file );
 ```
 
 - **hash** (*string*, *required*) - The unique identifier for a plugin or theme.
 - **name** (*string*, *required*) - The name of the plugin or theme.
 - **file** (*string*, *required*) - The **main file** path of the plugin. For theme, path to `functions.php`
-- **theme** (*boolean*, *optional*) - Indicate wheather the current usage for a theme or plugin. Defaults to `false`.
-- **notice** (*string*, *optional*) - If needs to override the default admin notice message, you can pass a string of your own.
 
 ### Usage Example
 
-Please refer to the **installation** step before start using the class. 
+Please refer to the **installation** step before start using the class.
 
 You can obtain the **hash** for your plugin for the [AppSero Dashboard](https://dashboard.appsero.com). The 3rd parameter **must** have to be the main file of the plugin.
 
@@ -71,11 +69,12 @@ Example code that needs to be used on your main plugin file.
  */
 function appsero_init_tracker_appsero_test() {
 
-    if ( ! class_exists( 'AppSero\Insights' ) ) {
-        require_once __DIR__ . '/appsero/src/insights.php';
-    }
+  if ( ! class_exists( 'AppSero\Insights' ) ) {
+      require_once __DIR__ . '/appsero/src/insights.php';
+  }
 
-    new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044891', 'Akismet', __FILE__ );
+  $insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044891', 'Akismet', __FILE__ );
+  $insights->init_plugin();
 }
 
 add_action( 'init', 'appsero_init_tracker_appsero_test' );
@@ -93,14 +92,89 @@ Example code that needs to be used on your themes `functions.php` file.
  */
 function appsero_init_tracker_twenty_twelve() {
 
-    if ( ! class_exists( 'AppSero\Insights' ) ) {
-        require_once __DIR__ . '/appsero/src/insights.php';
-    }
+	if ( ! class_exists( 'AppSero\Insights' ) ) {
+		require_once __DIR__ . '/appsero/src/insights.php';
+	}
 
-    new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__, true );
+	$insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
+	$insights->init_theme();
 }
 
 add_action( 'init', 'appsero_init_tracker_twenty_twelve' );
+```
+
+## More Usage
+
+Sometimes you wouldn't want to show the notice, or want to customize the notice message. You can do that as well.
+
+```php
+$insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
+```
+
+#### 1. Hiding the notice
+
+```php
+$insights->hide_notice();
+```
+
+#### 2. Customizing the notice message
+
+```php
+$insights->notice('My Custom Notice Message');
+```
+
+#### 3. Adding extra data
+
+You can add extra metadata from your theme or plugin. In that case, the **keys** has to be whitelisted from the AppSero dashboard.
+
+```php
+$insights->add_extra(array(
+  'key'     => 'value',
+  'another' => 'another_value'
+));
+```
+
+#### Finally, initialize
+
+After you instantiate the plugin, without calling `init_theme()` or `init_plugin()`, the required hooks will not be fired and nothing will work. So you must have to do this.
+
+```php
+$insights->init_plugin();
+
+// or
+$insights->init_theme();
+```
+
+#### Method Chaining
+
+You can chain the methods as well.
+
+```php
+$insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
+
+$insights->notice('Please allow us to track the usage')
+	->add_extra([
+		'key'   => 'value',
+		'value' => 'key'
+	])
+	->init_plugin();
+```
+
+---
+
+### Dynamic Usage
+
+In some cases you wouldn't want to show the optin message, but forcefully opt-in the user and send tracking data.
+
+```php
+$insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
+
+$insights->hide_notice()
+	->init_plugin();
+
+// somewhere in your code, opt-in the user forcefully
+// execute this only once
+$insights->optin();
 ```
 
 ## Credits
