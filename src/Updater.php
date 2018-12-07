@@ -39,8 +39,8 @@ class Updater {
     public function init() {
         add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_update' ) );
         add_filter( 'plugins_api', array( $this, 'plugins_api_filter' ), 10, 3 );
-        // remove_action( 'after_plugin_row_' . $this->name, 'wp_plugin_update_row', 10 );
-        // add_action( 'after_plugin_row_' . $this->name, array( $this, 'show_update_notification' ), 10, 2 );
+        // remove_action( 'after_plugin_row_' . $this->client->basename, 'wp_plugin_update_row', 10 );
+        // add_action( 'after_plugin_row_' . $this->client->basename, array( $this, 'show_update_notification' ), 10, 2 );
         // add_action( 'admin_init', array( $this, 'show_changelog' ) );
     }
 
@@ -73,6 +73,7 @@ class Updater {
         if ( false !== $version_info && is_object( $version_info ) && isset( $version_info->new_version ) ) {
 
             if ( version_compare( $this->client->project_version, $version_info->new_version, '<' ) ) {
+                unset( $version_info->sections );
                 $transient_data->response[ $this->client->basename ] = $version_info;
             }
 
@@ -152,6 +153,10 @@ class Updater {
         }
 
         $response = json_decode( wp_remote_retrieve_body( $response ) );
+
+        if ( ! isset( $response->id ) ) {
+            return false;
+        }
 
         if ( isset( $response->icons ) ) {
             $response->icons = (array) $response->icons;
