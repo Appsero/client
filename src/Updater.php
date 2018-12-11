@@ -27,32 +27,42 @@ class Updater {
 
         $this->cache_key = 'appsero_' . md5( $this->client->slug ) . '_version_info';
 
-        // Set up hooks.
-        $this->init();
+        // Run hooks.
+        if ( $this->client->type == 'plugin' ) {
+            $this->run_plugin_hooks();
+        } elseif ( $this->client->type == 'theme' ) {
+            $this->run_theme_hooks();
+        }
     }
 
     /**
-     * Set up WordPress filters to hook into WP's update process.
+     * Set up WordPress filter to hooks to get update.
      *
      * @return void
      */
-    public function init() {
-        add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_update' ) );
+    public function run_plugin_hooks() {
+        add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_plugin_update' ) );
         add_filter( 'plugins_api', array( $this, 'plugins_api_filter' ), 10, 3 );
-        // remove_action( 'after_plugin_row_' . $this->client->basename, 'wp_plugin_update_row', 10 );
-        // add_action( 'after_plugin_row_' . $this->client->basename, array( $this, 'show_update_notification' ), 10, 2 );
-        // add_action( 'admin_init', array( $this, 'show_changelog' ) );
+    }
+
+    /**
+     * Set up WordPress filter to hooks to get update.
+     *
+     * @return void
+     */
+    public function run_theme_hooks() {
+        add_filter( 'pre_set_site_transient_update_themes', array( $this, 'check_theme_update' ) );
     }
 
     /**
      * Check for Update for this specific project
      */
-    public function check_update( $transient_data ) {
+    public function check_plugin_update( $transient_data ) {
 
         global $pagenow;
 
         if ( ! is_object( $transient_data ) ) {
-            $transient_data = new stdClass;
+            $transient_data = new \stdClass;
         }
 
         if ( 'plugins.php' == $pagenow && is_multisite() ) {
@@ -154,7 +164,7 @@ class Updater {
 
         $response = json_decode( wp_remote_retrieve_body( $response ) );
 
-        if ( ! isset( $response->id ) ) {
+        if ( ! isset( $response->slug ) ) {
             return false;
         }
 
@@ -200,6 +210,44 @@ class Updater {
         }
 
         return $version_info;
+    }
+
+    /**
+     * Check theme upate
+     */
+    public function check_theme_update( $transient_data ) {
+        global $pagenow;
+
+        if ( ! is_object( $transient_data ) ) {
+            $transient_data = new \stdClass;
+        }
+
+        if ( 'themes.php' == $pagenow && is_multisite() ) {
+            return $transient_data;
+        }
+
+        if ( ! empty( $transient_data->response ) && ! empty( $transient_data->response[ $this->client->slug ] ) ) {
+            return $transient_data;
+        }
+
+        $version_info = $this->get_cached_version_info();
+
+        if ( false === $version_info ) {
+            $version_info = $this->get_project_latest_version();
+            $this->set_cached_version_info( $version_info );
+        }
+
+        if ( false !== $version_info && is_object( $version_info ) && isset( $version_info->new_version ) ) {
+
+            if ( version_compare( $this->client->project_version, $version_info->new_version, '<' ) ) {
+                $transient_data->response[ $this->client->slug ] = (array) $version_info;
+            }
+
+            $transient_data->last_checked = time();
+            $transient_data->checked[ $this->client->slug ] = $this->client->project_version;
+        }
+
+        return $transient_data;
     }
 
 }

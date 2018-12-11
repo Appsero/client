@@ -32,19 +32,15 @@ class Client {
 
     /**
      * The plugin/theme file path
+     * @example .../wp-content/plugins/test-slug/test-slug.php
      *
      * @var string
      */
     public $file;
 
     /**
-     * URL to the API endpoint
-     *
-     * @var string
-     */
-
-    /**
      * Main plugin file
+     * @example test-slug/test-slug.php
      *
      * @var string
      */
@@ -52,6 +48,7 @@ class Client {
 
     /**
      * Slug of the plugin
+     * @example test-slug
      *
      * @var string
      */
@@ -63,6 +60,13 @@ class Client {
      * @var string
      */
     public $project_version;
+
+    /**
+     * The project type
+     *
+     * @var string
+     */
+    public $type;
 
 	/**
      * Initialize the class
@@ -114,9 +118,20 @@ class Client {
 
             $this->project_version = $plugin_data['Version'];
 
+            $this->type = 'plugin';
+
         } else {
+
             $this->basename = str_replace( WP_CONTENT_DIR . '/themes/', '', $this->file );
+
             list( $this->slug, $mainfile) = explode( '/', $this->basename );
+
+            $theme = wp_get_theme( $this->slug );
+
+            $this->project_version = $theme->version;
+
+            $this->type = 'theme';
+
         }
     }
 

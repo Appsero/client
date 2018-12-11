@@ -102,6 +102,7 @@ class Insights {
         $this->init_common();
 
         add_action( 'switch_theme', array( $this, 'deactivation_cleanup' ) );
+        add_action( 'switch_theme', array( $this, 'theme_deactivated' ), 12, 3 );
     }
 
     /**
@@ -809,4 +810,36 @@ class Insights {
 
         <?php
     }
+
+    /**
+     * Run after theme deactivated
+     * @param  string $new_name
+     * @param  object $new_theme
+     * @param  object $old_theme
+     * @return void
+     */
+    public function theme_deactivated( $new_name, $new_theme, $old_theme )
+    {
+        // Make sure this is appsero theme
+        if ( $old_theme->get_template() == $this->client->slug ) {
+            $current_user = wp_get_current_user();
+
+            $data = array(
+                'hash'        => $this->client->hash,
+                'reason_id'   => 'none',
+                'reason_info' => '',
+                'site'        => get_bloginfo( 'name' ),
+                'url'         => home_url(),
+                'admin_email' => get_option( 'admin_email' ),
+                'user_email'  => $current_user->user_email,
+                'first_name'  => $current_user->first_name,
+                'last_name'   => $current_user->last_name,
+                'server'      => $this->get_server_info(),
+                'wp'          => $this->get_wp_info(),
+            );
+
+            $this->client->send_request( $data, 'deactivate' );
+        }
+    }
+
 }
