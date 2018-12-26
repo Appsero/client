@@ -11,13 +11,6 @@ namespace AppSero;
 class Insights {
 
     /**
-     * Main plugin file
-     *
-     * @var string
-     */
-    public $basename;
-
-    /**
      * The notice text
      *
      * @var string
@@ -91,6 +84,19 @@ class Insights {
         $this->notice = $text;
 
         return $this;
+    }
+
+    /**
+     * Initialize insights
+     *
+     * @return void
+     */
+    public function init() {
+        if ( $this->client->type == 'plugin' ) {
+            $this->init_plugin();
+        } else if ( $this->client->type == 'theme' ) {
+            $this->init_theme();
+        }
     }
 
     /**

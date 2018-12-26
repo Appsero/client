@@ -153,18 +153,32 @@ class Client {
     public function send_request( $params, $route, $blocking = false ) {
         $url = $this->endpoint() . $route;
 
+        $headers = array(
+            'user-agent' => 'AppSero/' . md5( esc_url( home_url() ) ) . ';',
+            'Accept'     => 'application/json',
+        );
+
         $response = wp_remote_post( $url, array(
             'method'      => 'POST',
             'timeout'     => 30,
             'redirection' => 5,
             'httpversion' => '1.0',
             'blocking'    => $blocking,
-            'headers'     => array( 'user-agent' => 'AppSero/' . md5( esc_url( home_url() ) ) . ';' ),
+            'headers'     => $headers,
             'body'        => array_merge( $params, array( 'client' => $this->version ) ),
             'cookies'     => array()
         ) );
 
         return $response;
+    }
+
+    /**
+     * License Object
+     *
+     * @return  \AppSero\License
+     */
+    public function license() {
+        return new License( $this );
     }
 
 }
