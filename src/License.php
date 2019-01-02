@@ -17,12 +17,42 @@ class License {
     protected $client;
 
     /**
+     * Arguments of create menu
+     *
+     * @var array
+     */
+    protected $menu_args;
+
+    /**
+     * `option_name` of `wp_options` table
+     *
+     * @var string
+     */
+    protected $option_key;
+
+    /**
+     * Error message of HTTP request
+     *
+     * @var string
+     */
+    protected $error;
+
+    /**
+     * Success message on form submit
+     *
+     * @var string
+     */
+    protected $success;
+
+    /**
      * Initialize the class
      *
      * @param AppSero\Client
      */
     public function __construct( Client $client ) {
         $this->client = $client;
+
+        $this->option_key = 'appsero_' . md5( $this->client->slug ) . '_manage_license';
     }
 
     /**
@@ -31,7 +61,7 @@ class License {
      * @return boolean
      */
     public function check( $license_key ) {
-        $route    = 'v1/license-api/' . $this->client->hash . '/check';
+        $route    = 'public/license/' . $this->client->hash . '/check';
 
         return $this->send_request( $license_key, $route );
     }
@@ -42,7 +72,7 @@ class License {
      * @return boolean
      */
     public function activate( $license_key ) {
-        $route    = 'v1/license-api/' . $this->client->hash . '/activate';
+        $route    = 'public/license/' . $this->client->hash . '/activate';
 
         return $this->send_request( $license_key, $route );
     }
@@ -53,7 +83,7 @@ class License {
      * @return boolean
      */
     public function deactivate( $license_key ) {
-        $route    = 'v1/license-api/' . $this->client->hash . '/deactivate';
+        $route    = 'public/license/' . $this->client->hash . '/deactivate';
 
         return $this->send_request( $license_key, $route );
     }
@@ -90,4 +120,180 @@ class License {
         return $response;
     }
 
+    /**
+     * Add settings page for license
+     *
+     * @param array $args
+     *
+     * @return void
+     */
+    public function add_settings_page( $args ) {
+        $defaults = array(
+            'type'        => 'menu', // Can be: menu, options, submenu
+            'page_title'  => 'Manage License',
+            'menu_title'  => 'Manage License',
+            'capability'  => 'manage_options',
+            'menu_slug'   => 'manage-license',
+            'icon_url'    => '',
+            'position'    => null,
+            'parent_slug' => '',
+        );
+
+        $this->menu_args = wp_parse_args( $args, $defaults );
+
+        add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+
+        add_action( $this->client->slug . '_license_check_event', array( $this, 'check_license_status' ) );
+    }
+
+    /**
+     * Admin Menu hook
+     *
+     * @return void
+     */
+    public function admin_menu() {
+        $add_page = 'add_' . $this->menu_args['type'] . '_page';
+
+        switch ( $this->menu_args['type'] ) {
+            case 'menu':
+                $add_page(
+                    $this->menu_args['page_title'],
+                    $this->menu_args['menu_title'],
+                    $this->menu_args['capability'],
+                    $this->menu_args['menu_slug'],
+                    array( $this, 'menu_output' ),
+                    $this->menu_args['icon_url'],
+                    $this->menu_args['position']
+                );
+                break;
+
+            case 'submenu':
+                $add_page(
+                    $this->menu_args['parent_slug'],
+                    $this->menu_args['page_title'],
+                    $this->menu_args['menu_title'],
+                    $this->menu_args['capability'],
+                    $this->menu_args['menu_slug'],
+                    array( $this, 'menu_output' )
+                );
+                break;
+
+            case 'options':
+                $add_page(
+                    $this->menu_args['page_title'],
+                    $this->menu_args['menu_title'],
+                    $this->menu_args['capability'],
+                    $this->menu_args['menu_slug'],
+                    array( $this, 'menu_output' )
+                );
+                break;
+        }
+    }
+
+    /**
+     * License menu output
+     */
+    public function menu_output() {
+
+        if ( isset( $_POST['submit'] ) ) {
+            $this->license_page_form( $_POST );
+        }
+
+        $license = get_option( $this->option_key, null );
+        $action = ( $license && isset( $license['status'] ) && 'activate' == $license['status'] ) ? 'Deactive' : 'Active';
+        ?>
+
+        <div class="wrap">
+            <h1><?php echo $this->menu_args['menu_title']; ?></h1>
+
+            <?php if ( ! empty( $this->error ) ) : ?>
+            <div class="notice notice-error is-dismissible">
+                <p><?php echo $this->error; ?></p>
+            </div>
+            <?php endif; ?>
+
+            <?php if ( ! empty( $this->success ) ) : ?>
+            <div class="notice notice-success is-dismissible">
+                <p><?php echo $this->success; ?></p>
+            </div>
+            <?php endif; ?>
+
+            <form method="post" action="<?php echo home_url( $_SERVER['REQUEST_URI'] ); ?>" novalidate="novalidate">
+                <table class="form-table">
+                    <tbody>
+                        <tr>
+                            <th scope="row">
+                                <label>License key</label>
+                            </th>
+                            <td>
+                                <input type="text" class="regular-text code" name="license_key" value="<?php echo $license['key']; ?>" placeholder="Enter your license key">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <input type="hidden" name="_action" value="<?php echo $action; ?>">
+                <p>
+                    <button type="submit" name="submit" class="button button-primary"><?php echo $action; ?></button>
+                </p>
+            </form>
+        </div>
+
+        <?php
+    }
+
+    /**
+     * License form submit
+     */
+    private function license_page_form( $form ) {
+        if ( $form['_action'] == 'Active' ) {
+            $response = $this->activate( $form['license_key'] );
+
+            if ( ! empty( $response['success'] ) ) {
+                $data = array(
+                    'key'    => $form['license_key'],
+                    'status' => 'activate',
+                );
+                update_option( $this->option_key, $data, false );
+                $this->success = 'License activated successfully.';
+            }
+        } else if ( $form['_action'] == 'Deactive' ) {
+            $response = $this->deactivate( $form['license_key'] );
+
+            if ( ! empty( $response['success'] ) ) {
+                $this->success = 'License deactivated successfully.';
+            }
+
+            $data = array(
+                'key'    => $form['license_key'],
+                'status' => 'deactivate',
+            );
+
+            update_option( $this->option_key, $data, false );
+        }
+
+        if ( isset( $response['error'] ) && ! empty( $response['error'] ) ) {
+            $this->error = $response['error'];
+        }
+
+        // var_export( $response );
+    }
+
+    /**
+     * Check license status on schedule
+     */
+    public function check_license_status() {
+        $license = get_option( $this->option_key, null );
+
+        if ( isset( $license['key'] ) && ! empty( $license['key'] ) ) {
+            $response = $this->check( $license['key'] );
+
+            if ( isset( $response['success'] ) && $response['success'] ) {
+                $license['status'] = 'activate';
+            } else {
+                $license['status'] = 'deactivate';
+            }
+
+            update_option( $this->option_key, $license, false );
+        }
+    }
 }

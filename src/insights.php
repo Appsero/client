@@ -297,6 +297,8 @@ class Insights {
      */
     private function schedule_event() {
         wp_schedule_event( time(), 'weekly', $this->client->slug . '_tracker_send_event' );
+
+        wp_schedule_event( time(), 'twicedaily', $this->client->slug . '_license_check_event' );
     }
 
     /**
@@ -306,6 +308,8 @@ class Insights {
      */
     private function clear_schedule_event() {
         wp_clear_scheduled_hook( $this->client->slug . '_tracker_send_event' );
+
+        wp_clear_scheduled_hook( $this->client->slug . '_license_check_event' );
     }
 
     /**
