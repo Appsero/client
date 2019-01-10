@@ -105,10 +105,20 @@ class License {
         $response = $this->client->send_request( $params, $route, true );
 
         if ( is_wp_error( $response ) ) {
-            return false;
+            return array(
+                'success' => false,
+                'error'   => $response->get_error_message()
+            );
         }
 
         $response = json_decode( wp_remote_retrieve_body( $response ), true );
+
+        if ( empty( $response ) ) {
+            return array(
+                'success' => false,
+                'error'   => 'Unknown error occurred, Please try again.'
+            );
+        }
 
         if ( isset( $response['errors'] ) && isset( $response['errors']['license_key'] ) ) {
             $response = array(
