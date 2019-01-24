@@ -137,7 +137,7 @@ class License {
      *
      * @return void
      */
-    public function add_settings_page( $args ) {
+    public function add_settings_page( $args = array() ) {
         $defaults = array(
             'type'        => 'menu', // Can be: menu, options, submenu
             'page_title'  => 'Manage License',
