@@ -101,13 +101,11 @@ class Updater {
      */
     private function get_cached_version_info() {
 
-        $cache = get_option( $this->cache_key );
+        $value = get_transient( $this->cache_key );
 
-        if( ! $cache || empty( $cache['timeout'] ) || time() > $cache['timeout'] ) {
+        if( ! $value && ! isset( $value->name ) ) {
             return false; // Cache is expired
         }
-
-        $value = json_decode( $cache['value'] );
 
         // We need to turn the icons into an array
         if ( isset( $value->icons ) ) {
@@ -134,12 +132,7 @@ class Updater {
             return;
         }
 
-        $data = array(
-            'timeout' => strtotime( '+3 hours', time() ),
-            'value'   => json_encode( $value )
-        );
-
-        update_option( $this->cache_key, $data, false );
+        set_transient( $this->cache_key, $value, 3 * HOUR_IN_SECONDS );
     }
 
     /**
@@ -155,7 +148,7 @@ class Updater {
             'name'        => $this->client->name,
             'slug'        => $this->client->slug,
             'basename'    => $this->client->basename,
-            'license_key' => ! empty( $license ) ? $license['key'] : '',
+            'license_key' => ! empty( $license ) && isset( $license['key'] ) ? $license['key'] : '',
         );
 
         $route = 'update/' . $this->client->hash . '/check';
