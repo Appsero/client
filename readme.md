@@ -44,7 +44,7 @@ AppSero can be used in both themes and plugins.
 The `AppSero\Client` class has *three* parameters:
 
 ```php
-$insights = new AppSero\Client( $hash, $name, $file );
+$client = new AppSero\Client( $hash, $name, $file );
 ```
 
 - **hash** (*string*, *required*) - The unique identifier for a plugin or theme.
@@ -146,6 +146,29 @@ $insights->hide_notice()->init();
 // somewhere in your code, opt-in the user forcefully
 // execute this only once
 $insights->optin();
+```
+
+Check your plugin/theme is using with valid license or not, First create a global variable of `License` object then use it anywhere in your code.
+If you are using it outside of same function make sure you global the variable before using the condition.
+
+```php
+$client = new AppSero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
+
+$args = array(
+    'type'        => 'submenu',
+    'menu_title'  => 'Twenty Twelve License',
+    'page_title'  => 'Twenty Twelve License Settings',
+    'menu_slug'   => 'twenty_twelve_settings',
+    'parent_slug' => 'themes.php',
+);
+
+global $twenty_twelve_license;
+$twenty_twelve_license = $client->license();
+$twenty_twelve_license->add_settings_page( $args );
+
+if ( $twenty_twelve_license->is_valid()  ) {
+    // Your special code here
+}
 ```
 
 ## Credits

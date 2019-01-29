@@ -45,6 +45,13 @@ class License {
     protected $success;
 
     /**
+     * Set value for valid licnese
+     *
+     * @var boolean
+     */
+    private $is_valid_licnese = null;
+
+    /**
      * Initialize the class
      *
      * @param AppSero\Client
@@ -217,35 +224,46 @@ class License {
             <h1><?php echo $this->menu_args['menu_title']; ?></h1>
 
             <?php if ( ! empty( $this->error ) ) : ?>
-            <div class="notice notice-error is-dismissible">
+            <div class="notice notice-error is-dismissible" style="max-width: 745px;">
                 <p><?php echo $this->error; ?></p>
             </div>
             <?php endif; ?>
 
             <?php if ( ! empty( $this->success ) ) : ?>
-            <div class="notice notice-success is-dismissible">
+            <div class="notice notice-success is-dismissible" style="max-width: 745px;">
                 <p><?php echo $this->success; ?></p>
             </div>
             <?php endif; ?>
 
-            <form method="post" action="<?php echo home_url( $_SERVER['REQUEST_URI'] ); ?>" novalidate="novalidate">
-                <table class="form-table">
-                    <tbody>
-                        <tr>
-                            <th scope="row">
-                                <label>License key</label>
-                            </th>
-                            <td>
-                                <input type="text" class="regular-text code" name="license_key" value="<?php echo $license['key']; ?>" placeholder="Enter your license key">
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <input type="hidden" name="_action" value="<?php echo $action; ?>">
-                <p>
-                    <button type="submit" name="submit" class="button button-primary"><?php echo $action; ?></button>
-                </p>
-            </form>
+            <br />
+
+            <div class="widget open" style="max-width: 800px; margin: 0;">
+                <div class="widget-top">
+                    <div class="widget-title"><h3>License Settings</h3></div>
+                </div>
+                <div class="widget-inside" style="display: block; padding: 5px 15px;">
+                    <form method="post" action="<?php echo home_url( $_SERVER['REQUEST_URI'] ); ?>" novalidate="novalidate">
+                        <table class="form-table">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">
+                                        <label>License key</label>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="regular-text code" value="<?php echo $license['key']; ?>"
+                                            placeholder="Enter your license key" name="license_key"
+                                            <?php echo ( 'Deactive' == $action ) ? 'readonly="readonly"' : ''; ?> />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <input type="hidden" name="_action" value="<?php echo $action; ?>">
+                        <p>
+                            <button type="submit" name="submit" class="button button-primary"><?php echo $action; ?></button>
+                        </p>
+                    </form>
+                </div>
+            </div> <!-- /.widget -->
         </div>
 
         <?php
@@ -306,4 +324,21 @@ class License {
             update_option( $this->option_key, $license, false );
         }
     }
+
+    /**
+     * Check this is a valid license
+     */
+    public function is_valid() {
+        if ( null !== $this->is_valid_licnese ) {
+            return $this->is_valid_licnese;
+        }
+
+        $license = get_option( $this->option_key, null );
+        if ( ! empty( $license['key'] ) && isset( $license['status'] ) && $license['status'] == 'activate' ) {
+            return $this->is_valid_licnese = true;
+        }
+
+        return $this->is_valid_licnese = false;
+    }
+
 }
