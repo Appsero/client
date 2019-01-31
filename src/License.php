@@ -292,7 +292,7 @@ class License {
             }
 
             $data = array(
-                'key'    => $form['license_key'],
+                'key'    => '',
                 'status' => 'deactivate',
             );
 

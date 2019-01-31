@@ -207,6 +207,7 @@ class Insights {
             'users'            => $this->get_user_counts(),
             'active_plugins'   => count( $all_plugins['active_plugins'] ),
             'inactive_plugins' => count( $all_plugins['inactive_plugins'] ),
+            'ip_address'       => $this->get_user_ip_address(),
         );
 
         // for child classes
@@ -356,6 +357,9 @@ class Insights {
                     e.preventDefault();
                     jQuery(this).parents('.updated').find('p.description').slideToggle('fast');
                 });
+                jQuery.getJSON('https://api.ipify.org?format=jsonp&callback=?', function(json) {
+                    json.ip;
+                } );
                 </script>
             ";
         }
@@ -828,8 +832,7 @@ class Insights {
      * @param  object $old_theme
      * @return void
      */
-    public function theme_deactivated( $new_name, $new_theme, $old_theme )
-    {
+    public function theme_deactivated( $new_name, $new_theme, $old_theme ) {
         // Make sure this is appsero theme
         if ( $old_theme->get_template() == $this->client->slug ) {
             $current_user = wp_get_current_user();
@@ -850,6 +853,15 @@ class Insights {
 
             $this->client->send_request( $data, 'deactivate' );
         }
+    }
+
+    /**
+     * Get user IP Address
+     */
+    private function get_user_ip_address() {
+        $ipify = file_get_contents( 'https://api.ipify.org/?format=json' );
+        $ip_address = json_decode( $ipify, true );
+        return empty( $ip_address['ip'] ) ? 'UNKNOWN' : $ip_address['ip'];
     }
 
 }
