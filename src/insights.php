@@ -196,7 +196,7 @@ class Insights {
         }
 
         $data = array(
-            'url'              => home_url(),
+            'url'              => esc_url( home_url() ),
             'site'             => get_bloginfo( 'name' ),
             'admin_email'      => get_option( 'admin_email' ),
             'first_name'       => $first_name,
@@ -651,13 +651,14 @@ class Insights {
             'reason_id'   => sanitize_text_field( $_POST['reason_id'] ),
             'reason_info' => isset( $_REQUEST['reason_info'] ) ? trim( stripslashes( $_REQUEST['reason_info'] ) ) : '',
             'site'        => get_bloginfo( 'name' ),
-            'url'         => home_url(),
+            'url'         => esc_url( home_url() ),
             'admin_email' => get_option( 'admin_email' ),
             'user_email'  => $current_user->user_email,
             'first_name'  => $current_user->first_name,
             'last_name'   => $current_user->last_name,
             'server'      => $this->get_server_info(),
             'wp'          => $this->get_wp_info(),
+            'ip_address'  => $this->get_user_ip_address(),
         );
 
         $this->client->send_request( $data, 'deactivate' );
@@ -842,13 +843,14 @@ class Insights {
                 'reason_id'   => 'none',
                 'reason_info' => '',
                 'site'        => get_bloginfo( 'name' ),
-                'url'         => home_url(),
+                'url'         => esc_url( home_url() ),
                 'admin_email' => get_option( 'admin_email' ),
                 'user_email'  => $current_user->user_email,
                 'first_name'  => $current_user->first_name,
                 'last_name'   => $current_user->last_name,
                 'server'      => $this->get_server_info(),
                 'wp'          => $this->get_wp_info(),
+                'ip_address'  => $this->get_user_ip_address(),
             );
 
             $this->client->send_request( $data, 'deactivate' );
@@ -861,7 +863,7 @@ class Insights {
     private function get_user_ip_address() {
         $ipify = file_get_contents( 'https://api.ipify.org/?format=json' );
         $ip_address = json_decode( $ipify, true );
-        return empty( $ip_address['ip'] ) ? 'UNKNOWN' : $ip_address['ip'];
+        return empty( $ip_address['ip'] ) ? '' : $ip_address['ip'];
     }
 
 }
