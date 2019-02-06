@@ -197,7 +197,7 @@ class Insights {
 
         $data = array(
             'url'              => esc_url( home_url() ),
-            'site'             => get_bloginfo( 'name' ),
+            'site'             => $this->get_site_name(),
             'admin_email'      => get_option( 'admin_email' ),
             'first_name'       => $first_name,
             'last_name'        => $last_name,
@@ -650,7 +650,7 @@ class Insights {
             'hash'        => $this->client->hash,
             'reason_id'   => sanitize_text_field( $_POST['reason_id'] ),
             'reason_info' => isset( $_REQUEST['reason_info'] ) ? trim( stripslashes( $_REQUEST['reason_info'] ) ) : '',
-            'site'        => get_bloginfo( 'name' ),
+            'site'        => $this->get_site_name(),
             'url'         => esc_url( home_url() ),
             'admin_email' => get_option( 'admin_email' ),
             'user_email'  => $current_user->user_email,
@@ -842,7 +842,7 @@ class Insights {
                 'hash'        => $this->client->hash,
                 'reason_id'   => 'none',
                 'reason_info' => '',
-                'site'        => get_bloginfo( 'name' ),
+                'site'        => $this->get_site_name(),
                 'url'         => esc_url( home_url() ),
                 'admin_email' => get_option( 'admin_email' ),
                 'user_email'  => $current_user->user_email,
@@ -866,4 +866,20 @@ class Insights {
         return empty( $ip_address['ip'] ) ? '' : $ip_address['ip'];
     }
 
+    /**
+     * Get site name
+     */
+    private function get_site_name() {
+        $site_name = get_bloginfo( 'name' );
+        if ( empty( $site_name ) ) {
+            $site_name = get_bloginfo( 'description' );
+            $site_name = wp_trim_words( $site_name, 3, '' );
+        }
+
+        if ( empty( $site_name ) ) {
+            $site_name = get_bloginfo( 'url' );
+        }
+
+        return $site_name;
+    }
 }
