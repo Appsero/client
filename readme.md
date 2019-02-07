@@ -34,7 +34,7 @@ git clone https://github.com/AppSero/client.git appsero
 Now include the dependencies in your plugin/theme.
 
 ```php
-require __DIR__ . '/appsero/src/load.php';
+require __DIR__ . '/appsero/src/Client.php';
 ```
 
 ## Insights
@@ -66,7 +66,7 @@ You can obtain the **hash** for your plugin for the [AppSero Dashboard](https://
 function appsero_init_tracker_appsero_test() {
 
     if ( ! class_exists( 'AppSero\Client' ) ) {
-      require_once __DIR__ . '/appsero/src/load.php';
+        require_once __DIR__ . '/appsero/src/Client.php';
     }
 
     $client = new AppSero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044891', 'Akismet', __FILE__ );

@@ -579,9 +579,12 @@ class Insights {
     public function deactivation_cleanup() {
         $this->clear_schedule_event();
 
-        delete_option( $this->client->slug . '_allow_tracking' );
+        if ( 'theme' == $this->client->type ) {
+            delete_option( $this->client->slug . '_tracking_last_send' );
+            delete_option( $this->client->slug . '_allow_tracking' );
+        }
+
         delete_option( $this->client->slug . '_tracking_notice' );
-        delete_option( $this->client->slug . '_tracking_last_send' );
     }
 
     /**
