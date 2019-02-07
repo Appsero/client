@@ -1,16 +1,15 @@
 <?php
-
-namespace AppSero;
+namespace Appsero;
 
 /**
- * AppSero Updater
+ * Appsero Updater
  *
  * This class will show new updates project
  */
 class Updater {
 
     /**
-     * AppSero\Client
+     * Appsero\Client
      *
      * @var object
      */
@@ -19,12 +18,11 @@ class Updater {
     /**
      * Initialize the class
      *
-     * @param AppSero\Client
+     * @param Appsero\Client
      */
     public function __construct( Client $client ) {
 
-        $this->client = $client;
-
+        $this->client    = $client;
         $this->cache_key = 'appsero_' . md5( $this->client->slug ) . '_version_info';
 
         // Run hooks.
@@ -58,7 +56,6 @@ class Updater {
      * Check for Update for this specific project
      */
     public function check_plugin_update( $transient_data ) {
-
         global $pagenow;
 
         if ( ! is_object( $transient_data ) ) {

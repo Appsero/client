@@ -1,6 +1,5 @@
 <?php
-
-namespace AppSero;
+namespace Appsero;
 
 /**
  * AppSero License Checker
@@ -54,12 +53,12 @@ class License {
     /**
      * Initialize the class
      *
-     * @param AppSero\Client
+     * @param Appsero\Client
      */
     public function __construct( Client $client ) {
         $this->client = $client;
 
-        $this->option_key = 'appsero_' . md5( $this->client->slug ) . '_manage_license';
+        $this->option_key = 'appsero_' . md5( $this->client->slug ) . '_licenses';
     }
 
     /**
@@ -335,10 +334,12 @@ class License {
 
         $license = get_option( $this->option_key, null );
         if ( ! empty( $license['key'] ) && isset( $license['status'] ) && $license['status'] == 'activate' ) {
-            return $this->is_valid_licnese = true;
+            $this->is_valid_licnese = true;
+        } else {
+        	$this->is_valid_licnese = false;
         }
 
-        return $this->is_valid_licnese = false;
+        return $this->is_valid_licnese;
     }
 
 }

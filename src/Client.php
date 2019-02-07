@@ -1,6 +1,5 @@
 <?php
-
-namespace AppSero;
+namespace Appsero;
 
 /**
  * AppSero Client
@@ -84,12 +83,45 @@ class Client {
     }
 
     /**
-     * Get Insights class object
+     * Initialize insights class
      *
-     * @return AppSero\Insights
+     * @return Appsero\Insights
      */
     public function insights() {
+
+        if ( ! class_exists( __NAMESPACE__ . '\Insights') ) {
+            require_once __DIR__ . '/Insights.php';
+        }
+
         return new Insights( $this );
+    }
+
+    /**
+     * Initialize plugin/theme updater
+     *
+     * @return Appsero\Updater
+     */
+    public function updater() {
+
+        if ( ! class_exists( __NAMESPACE__ . '\Updater') ) {
+            require_once __DIR__ . '/Updater.php';
+        }
+
+        return new Updater( $this );
+    }
+
+    /**
+     * Initialize license checker
+     *
+     * @return Appsero\License
+     */
+    public function license() {
+
+        if ( ! class_exists( __NAMESPACE__ . '\License') ) {
+            require_once __DIR__ . '/License.php';
+        }
+
+        return new License( $this );
     }
 
     /**
@@ -99,14 +131,18 @@ class Client {
      */
     public function endpoint() {
         $endpoint = apply_filters( 'appsero_endpoint', 'https://api.appsero.com' );
+
         return trailingslashit( $endpoint );
     }
 
     /**
      * Set project basename, slug and version
+     *
+     * @return void
      */
-    public function set_basename_and_slug() {
-        if ( strpos( $this->file, '/wp-content/themes/' ) === false ) {
+    protected function set_basename_and_slug() {
+
+        if ( strpos( $this->file, WP_CONTENT_DIR . '/themes/' ) === false ) {
 
             $this->basename = plugin_basename( $this->file );
 
@@ -117,7 +153,6 @@ class Client {
             $plugin_data = get_plugin_data( $this->file );
 
             $this->project_version = $plugin_data['Version'];
-
             $this->type = 'plugin';
 
         } else {
@@ -129,17 +164,9 @@ class Client {
             $theme = wp_get_theme( $this->slug );
 
             $this->project_version = $theme->version;
-
             $this->type = 'theme';
 
         }
-    }
-
-    /**
-     * Run updater
-     */
-    public function updater() {
-        return new Updater( $this );
     }
 
     /**
@@ -148,13 +175,13 @@ class Client {
      * @param  array  $params
      * @param  string $route
      *
-     * @return void
+     * @return array|WP_Error   Array of results including HTTP headers or WP_Error if the request failed.
      */
     public function send_request( $params, $route, $blocking = false ) {
         $url = $this->endpoint() . $route;
 
         $headers = array(
-            'user-agent' => 'AppSero/' . md5( esc_url( home_url() ) ) . ';',
+            'user-agent' => 'Appsero/' . md5( esc_url( home_url() ) ) . ';',
             'Accept'     => 'application/json',
         );
 
@@ -170,15 +197,6 @@ class Client {
         ) );
 
         return $response;
-    }
-
-    /**
-     * License Object
-     *
-     * @return  \AppSero\License
-     */
-    public function license() {
-        return new License( $this );
     }
 
 }

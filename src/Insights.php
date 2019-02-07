@@ -1,8 +1,8 @@
 <?php
-namespace AppSero;
+namespace Appsero;
 
 /**
- * AppSero Insights
+ * Appsero Insights
  *
  * This is a tracker class to track plugin usage based on if the customer has opted in.
  * No personal information is being tracked by this class, only general settings, active plugins, environment details
@@ -125,6 +125,7 @@ class Insights {
 
         $this->init_common();
 
+        register_activation_hook( $this->client->file, array( $this, 'activate_plugin' ) );
         register_deactivation_hook( $this->client->file, array( $this, 'deactivation_cleanup' ) );
     }
 
@@ -286,6 +287,8 @@ class Insights {
      * @return boolean
      */
     private function is_local_server() {
+    	return false;
+
         $is_local = in_array( $_SERVER['REMOTE_ADDR'], array( '127.0.0.1', '::1' ) );
 
         return apply_filters( 'appsero_is_local', $is_local );
@@ -298,8 +301,7 @@ class Insights {
      */
     private function schedule_event() {
         wp_schedule_event( time(), 'weekly', $this->client->slug . '_tracker_send_event' );
-
-        wp_schedule_event( time(), 'twicedaily', $this->client->slug . '_license_check_event' );
+        wp_schedule_event( time(), 'daily', $this->client->slug . '_license_check_event' );
     }
 
     /**
@@ -309,7 +311,6 @@ class Insights {
      */
     private function clear_schedule_event() {
         wp_clear_scheduled_hook( $this->client->slug . '_tracker_send_event' );
-
         wp_clear_scheduled_hook( $this->client->slug . '_license_check_event' );
     }
 
@@ -553,6 +554,21 @@ class Insights {
         );
 
         return $schedules;
+    }
+
+    /**
+     * Plugin activation hook
+     *
+     * @return void
+     */
+    public function activate_plugin() {
+    	$allowed = get_option( $this->client->slug . '_allow_tracking', 'no' );
+
+    	if ( 'yes' !== $allowed ) {
+    		return;
+    	}
+
+    	wp_schedule_event( time(), 'weekly', $this->client->slug . '_tracker_send_event' );
     }
 
     /**
@@ -861,8 +877,9 @@ class Insights {
      * Get user IP Address
      */
     private function get_user_ip_address() {
-        $ipify = file_get_contents( 'https://api.ipify.org/?format=json' );
-        $ip_address = json_decode( $ipify, true );
+		$ipify      = file_get_contents( 'https://api.ipify.org/?format=json' );
+		$ip_address = json_decode( $ipify, true );
+
         return empty( $ip_address['ip'] ) ? '' : $ip_address['ip'];
     }
 
@@ -871,6 +888,7 @@ class Insights {
      */
     private function get_site_name() {
         $site_name = get_bloginfo( 'name' );
+
         if ( empty( $site_name ) ) {
             $site_name = get_bloginfo( 'description' );
             $site_name = wp_trim_words( $site_name, 3, '' );
