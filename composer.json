@@ -1,6 +1,6 @@
 {
     "name": "appsero/client",
-    "description": "AppSero Client",
+    "description": "Appsero Client",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -12,8 +12,10 @@
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "AppSero\\": "src/"
+            "Appsero\\": "src/"
         }
     },
-    "require": {}
+    "require": {
+        "php": ">=5.3"
+    }
 }

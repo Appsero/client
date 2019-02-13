@@ -34,17 +34,17 @@ git clone https://github.com/AppSero/client.git appsero
 Now include the dependencies in your plugin/theme.
 
 ```php
-require __DIR__ . '/appsero/src/insights.php';
+require __DIR__ . '/appsero/src/Client.php';
 ```
 
 ## Insights
 
 AppSero can be used in both themes and plugins.
 
-The `AppSero\Insights` class has *three* parameters:
+The `AppSero\Client` class has *three* parameters:
 
 ```php
-$insights = new AppSero\Insights( $hash, $name, $file );
+$client = new AppSero\Client( $hash, $name, $file );
 ```
 
 - **hash** (*string*, *required*) - The unique identifier for a plugin or theme.
@@ -57,70 +57,64 @@ Please refer to the **installation** step before start using the class.
 
 You can obtain the **hash** for your plugin for the [AppSero Dashboard](https://dashboard.appsero.com). The 3rd parameter **must** have to be the main file of the plugin.
 
-#### For Plugins
-
-Example code that needs to be used on your main plugin file.
-
 ```php
 /**
- * Initialize the plugin tracker
+ * Initialize the tracker
  *
  * @return void
  */
 function appsero_init_tracker_appsero_test() {
 
-    if ( ! class_exists( 'AppSero\Insights' ) ) {
-      require_once __DIR__ . '/appsero/src/insights.php';
+    if ( ! class_exists( 'AppSero\Client' ) ) {
+        require_once __DIR__ . '/appsero/src/Client.php';
     }
 
-    $insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044891', 'Akismet', __FILE__ );
-    $insights->init_plugin();
+    $client = new AppSero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044891', 'Akismet', __FILE__ );
+
+    // Active insights
+    $client->insights()->init();
+
+    // Active automatic updater
+    $client->updater();
+
+    // Active license page and checker
+    $args = array(
+        'type'       => 'options',
+        'menu_title' => 'Akismet',
+        'page_title' => 'Akismet License Settings',
+        'menu_slug'  => 'akismet_settings',
+    );
+    $client->license()->add_settings_page( $args );
 }
 
 add_action( 'init', 'appsero_init_tracker_appsero_test' );
 ```
 
-#### For Themes
-
-Example code that needs to be used on your themes `functions.php` file.
-
-```php
-/**
- * Initialize the theme tracker
- *
- * @return void
- */
-function appsero_init_tracker_twenty_twelve() {
-
-    if ( ! class_exists( 'AppSero\Insights' ) ) {
-        require_once __DIR__ . '/appsero/src/insights.php';
-    }
-
-    $insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
-    $insights->init_theme();
-}
-
-add_action( 'init', 'appsero_init_tracker_twenty_twelve' );
-```
+> For plugins example code that needs to be used on your main plugin file.
+> For themes example code that needs to be used on your themes `functions.php` file.
 
 ## More Usage
 
 Sometimes you wouldn't want to show the notice, or want to customize the notice message. You can do that as well.
 
 ```php
-$insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
+$client = new AppSero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
 ```
 
 #### 1. Hiding the notice
 
 ```php
-$insights->hide_notice();
+$client->insights()
+       ->hide_notice()
+       ->init();
 ```
 
 #### 2. Customizing the notice message
 
 ```php
-$insights->notice('My Custom Notice Message');
+$client->insights()
+       ->notice( 'My Custom Notice Message' )
+       ->init();
 ```
 
 #### 3. Adding extra data
@@ -128,36 +122,13 @@ $insights->notice('My Custom Notice Message');
 You can add extra metadata from your theme or plugin. In that case, the **keys** has to be whitelisted from the AppSero dashboard.
 
 ```php
-$insights->add_extra(array(
+$metadata = array(
     'key'     => 'value',
     'another' => 'another_value'
-));
-```
-
-#### Finally, initialize
-
-After you instantiate the plugin, without calling `init_theme()` or `init_plugin()`, the required hooks will not be fired and nothing will work. So you must have to do this.
-
-```php
-$insights->init_plugin();
-
-// or
-$insights->init_theme();
-```
-
-#### Method Chaining
-
-You can chain the methods as well.
-
-```php
-$insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
-
-$insights->notice('Please allow us to track the usage')
-    ->add_extra([
-        'key'   => 'value',
-        'value' => 'key'
-    ])
-    ->init_plugin();
+);
+$client->insights()
+       ->add_extra( $metadata )
+       ->init();
 ```
 
 ---
@@ -167,14 +138,37 @@ $insights->notice('Please allow us to track the usage')
 In some cases you wouldn't want to show the optin message, but forcefully opt-in the user and send tracking data.
 
 ```php
-$insights = new AppSero\Insights( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
+$client = new AppSero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
 
-$insights->hide_notice()
-    ->init_plugin();
+$insights = $client->insights();
+$insights->hide_notice()->init();
 
 // somewhere in your code, opt-in the user forcefully
 // execute this only once
 $insights->optin();
+```
+
+Check your plugin/theme is using with valid license or not, First create a global variable of `License` object then use it anywhere in your code.
+If you are using it outside of same function make sure you global the variable before using the condition.
+
+```php
+$client = new AppSero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
+
+$args = array(
+    'type'        => 'submenu',
+    'menu_title'  => 'Twenty Twelve License',
+    'page_title'  => 'Twenty Twelve License Settings',
+    'menu_slug'   => 'twenty_twelve_settings',
+    'parent_slug' => 'themes.php',
+);
+
+global $twenty_twelve_license;
+$twenty_twelve_license = $client->license();
+$twenty_twelve_license->add_settings_page( $args );
+
+if ( $twenty_twelve_license->is_valid()  ) {
+    // Your special code here
+}
 ```
 
 ## Credits
