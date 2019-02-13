@@ -197,6 +197,7 @@ class Insights {
         }
 
         $data = array(
+            'version'          => $this->client->project_version,
             'url'              => esc_url( home_url() ),
             'site'             => $this->get_site_name(),
             'admin_email'      => get_option( 'admin_email' ),
@@ -209,6 +210,7 @@ class Insights {
             'active_plugins'   => count( $all_plugins['active_plugins'] ),
             'inactive_plugins' => count( $all_plugins['inactive_plugins'] ),
             'ip_address'       => $this->get_user_ip_address(),
+            'theme'            => get_stylesheet(),
         );
 
         // for child classes
@@ -287,7 +289,7 @@ class Insights {
      * @return boolean
      */
     private function is_local_server() {
-    	return false;
+        return false;
 
         $is_local = in_array( $_SERVER['REMOTE_ADDR'], array( '127.0.0.1', '::1' ) );
 
@@ -562,13 +564,13 @@ class Insights {
      * @return void
      */
     public function activate_plugin() {
-    	$allowed = get_option( $this->client->slug . '_allow_tracking', 'no' );
+        $allowed = get_option( $this->client->slug . '_allow_tracking', 'no' );
 
-    	if ( 'yes' !== $allowed ) {
-    		return;
-    	}
+        if ( 'yes' !== $allowed ) {
+            return;
+        }
 
-    	wp_schedule_event( time(), 'weekly', $this->client->slug . '_tracker_send_event' );
+        wp_schedule_event( time(), 'weekly', $this->client->slug . '_tracker_send_event' );
     }
 
     /**
@@ -880,8 +882,8 @@ class Insights {
      * Get user IP Address
      */
     private function get_user_ip_address() {
-		$ipify      = file_get_contents( 'https://api.ipify.org/?format=json' );
-		$ip_address = json_decode( $ipify, true );
+        $ipify      = file_get_contents( 'https://api.ipify.org/?format=json' );
+        $ip_address = json_decode( $ipify, true );
 
         return empty( $ip_address['ip'] ) ? '' : $ip_address['ip'];
     }
