@@ -1,6 +1,7 @@
 {
     "name": "appsero/client",
     "description": "Appsero Client",
+    "keywords": ["analytics", "wordpress", "plugin", "theme"],
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -9,7 +10,6 @@
             "email": "tareq@appsero.com"
         }
     ],
-    "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "Appsero\\": "src/"
