@@ -566,11 +566,16 @@ class Insights {
     public function activate_plugin() {
         $allowed = get_option( $this->client->slug . '_allow_tracking', 'no' );
 
+        // if it wasn't allowed before, do nothing
         if ( 'yes' !== $allowed ) {
             return;
         }
 
+        // re-schedule and delete the last sent time so we could force send again
         wp_schedule_event( time(), 'weekly', $this->client->slug . '_tracker_send_event' );
+        delete_option( $this->client->slug . '_tracking_last_send' );
+
+        $this->send_tracking_data( true );
     }
 
     /**
@@ -882,10 +887,19 @@ class Insights {
      * Get user IP Address
      */
     private function get_user_ip_address() {
-        $ipify      = file_get_contents( 'https://api.ipify.org/?format=json' );
-        $ip_address = json_decode( $ipify, true );
+        $response = wp_remote_get( 'https://icanhazip.com/' );
 
-        return empty( $ip_address['ip'] ) ? '' : $ip_address['ip'];
+        if ( is_wp_error( $response ) ) {
+            return '';
+        }
+
+        $ip = wp_remote_retrieve_body( $response );
+
+        if ( ! filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+            return '';
+        }
+
+        return $ip;
     }
 
     /**
