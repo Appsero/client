@@ -188,8 +188,17 @@ class Insights {
      */
     protected function get_tracking_data() {
         $all_plugins = $this->get_all_plugins();
-        $admin_user  = get_user_by( 'id', 1 );
-        $first_name  = $last_name = '';
+
+        $users = get_users( array(
+            'role'    => 'administrator',
+            'orderby' => 'ID',
+            'order'   => 'ASC',
+            'number'  => 1,
+            'paged'   => 1,
+        ) );
+
+        $admin_user =  ( is_array( $users ) && ! empty( $users ) ) ? $users[0] : false;
+        $first_name = $last_name = '';
 
         if ( $admin_user ) {
             $first_name = $admin_user->first_name ? $admin_user->first_name : $admin_user->display_name;
@@ -893,7 +902,7 @@ class Insights {
             return '';
         }
 
-        $ip = wp_remote_retrieve_body( $response );
+        $ip = trim( wp_remote_retrieve_body( $response ) );
 
         if ( ! filter_var( $ip, FILTER_VALIDATE_IP ) ) {
             return '';
