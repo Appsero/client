@@ -87,7 +87,7 @@ function appsero_init_tracker_appsero_test() {
     $client->license()->add_settings_page( $args );
 }
 
-add_action( 'init', 'appsero_init_tracker_appsero_test' );
+appsero_init_tracker_appsero_test();
 ```
 
 > For plugins example code that needs to be used on your main plugin file.

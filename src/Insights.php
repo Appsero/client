@@ -694,6 +694,7 @@ class Insights {
             'server'      => $this->get_server_info(),
             'wp'          => $this->get_wp_info(),
             'ip_address'  => $this->get_user_ip_address(),
+            'version'     => $this->client->project_version,
         );
 
         $this->client->send_request( $data, 'deactivate' );
@@ -886,6 +887,7 @@ class Insights {
                 'server'      => $this->get_server_info(),
                 'wp'          => $this->get_wp_info(),
                 'ip_address'  => $this->get_user_ip_address(),
+                'version'     => $this->client->project_version,
             );
 
             $this->client->send_request( $data, 'deactivate' );
