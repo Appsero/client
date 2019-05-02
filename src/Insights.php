@@ -43,10 +43,15 @@ class Insights {
      *
      * @param AppSero\Client
      */
-    public function __construct( Client $client ) {
+    public function __construct( $client, $name = null, $file = null ) {
 
-        $this->client = $client;
+        if ( is_string( $client ) && ! empty( $name ) && ! empty( $file ) ) {
+            $client = new Client( $client, $name, $file );
+        }
 
+        if ( is_object( $client ) && is_a( $client, 'Appsero\Client' ) ) {
+            $this->client = $client;
+        }
     }
 
     /**
