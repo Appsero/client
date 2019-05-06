@@ -124,7 +124,7 @@ class Insights {
     public function init_plugin() {
         // plugin deactivate popup
         if ( ! $this->is_local_server() ) {
-            add_action( 'plugin_action_links_' . $this->client->basename, array( $this, 'plugin_action_links' ) );
+            add_filter( 'plugin_action_links_' . $this->client->basename, array( $this, 'plugin_action_links' ) );
             add_action( 'admin_footer', array( $this, 'deactivate_scripts' ) );
         }
 
@@ -225,9 +225,10 @@ class Insights {
             'inactive_plugins' => count( $all_plugins['inactive_plugins'] ),
             'ip_address'       => $this->get_user_ip_address(),
             'theme'            => get_stylesheet(),
+            'version'          => $this->client->project_version,
         );
 
-        // for child classes
+        // Add metadata
         if ( $extra = $this->get_extra_data() ) {
             $data['extra'] = $extra;
         }
@@ -699,8 +700,14 @@ class Insights {
             'server'      => $this->get_server_info(),
             'wp'          => $this->get_wp_info(),
             'ip_address'  => $this->get_user_ip_address(),
+            'theme'       => get_stylesheet(),
             'version'     => $this->client->project_version,
         );
+
+        // Add metadata
+        if ( $extra = $this->get_extra_data() ) {
+            $data['extra'] = $extra;
+        }
 
         $this->client->send_request( $data, 'deactivate' );
 
@@ -892,6 +899,7 @@ class Insights {
                 'server'      => $this->get_server_info(),
                 'wp'          => $this->get_wp_info(),
                 'ip_address'  => $this->get_user_ip_address(),
+                'theme'       => get_stylesheet(),
                 'version'     => $this->client->project_version,
             );
 
