@@ -2,7 +2,7 @@
 namespace Appsero;
 
 /**
- * AppSero License Checker
+ * Appsero License Checker
  *
  * This class will check, active and deactive license
  */
