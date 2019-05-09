@@ -2,7 +2,7 @@
 namespace Appsero;
 
 /**
- * AppSero License Checker
+ * Appsero License Checker
  *
  * This class will check, active and deactive license
  */
@@ -119,7 +119,7 @@ class License {
 
         $response = json_decode( wp_remote_retrieve_body( $response ), true );
 
-        if ( empty( $response ) ) {
+        if ( empty( $response ) || isset( $response['exception'] )) {
             return array(
                 'success' => false,
                 'error'   => 'Unknown error occurred, Please try again.'

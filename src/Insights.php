@@ -43,10 +43,15 @@ class Insights {
      *
      * @param AppSero\Client
      */
-    public function __construct( Client $client ) {
+    public function __construct( $client, $name = null, $file = null ) {
 
-        $this->client = $client;
+        if ( is_string( $client ) && ! empty( $name ) && ! empty( $file ) ) {
+            $client = new Client( $client, $name, $file );
+        }
 
+        if ( is_object( $client ) && is_a( $client, 'Appsero\Client' ) ) {
+            $this->client = $client;
+        }
     }
 
     /**
@@ -119,7 +124,7 @@ class Insights {
     public function init_plugin() {
         // plugin deactivate popup
         if ( ! $this->is_local_server() ) {
-            add_action( 'plugin_action_links_' . $this->client->basename, array( $this, 'plugin_action_links' ) );
+            add_filter( 'plugin_action_links_' . $this->client->basename, array( $this, 'plugin_action_links' ) );
             add_action( 'admin_footer', array( $this, 'deactivate_scripts' ) );
         }
 
@@ -188,8 +193,17 @@ class Insights {
      */
     protected function get_tracking_data() {
         $all_plugins = $this->get_all_plugins();
-        $admin_user  = get_user_by( 'id', 1 );
-        $first_name  = $last_name = '';
+
+        $users = get_users( array(
+            'role'    => 'administrator',
+            'orderby' => 'ID',
+            'order'   => 'ASC',
+            'number'  => 1,
+            'paged'   => 1,
+        ) );
+
+        $admin_user =  ( is_array( $users ) && ! empty( $users ) ) ? $users[0] : false;
+        $first_name = $last_name = '';
 
         if ( $admin_user ) {
             $first_name = $admin_user->first_name ? $admin_user->first_name : $admin_user->display_name;
@@ -211,9 +225,10 @@ class Insights {
             'inactive_plugins' => count( $all_plugins['inactive_plugins'] ),
             'ip_address'       => $this->get_user_ip_address(),
             'theme'            => get_stylesheet(),
+            'version'          => $this->client->project_version,
         );
 
-        // for child classes
+        // Add metadata
         if ( $extra = $this->get_extra_data() ) {
             $data['extra'] = $extra;
         }
@@ -685,7 +700,14 @@ class Insights {
             'server'      => $this->get_server_info(),
             'wp'          => $this->get_wp_info(),
             'ip_address'  => $this->get_user_ip_address(),
+            'theme'       => get_stylesheet(),
+            'version'     => $this->client->project_version,
         );
+
+        // Add metadata
+        if ( $extra = $this->get_extra_data() ) {
+            $data['extra'] = $extra;
+        }
 
         $this->client->send_request( $data, 'deactivate' );
 
@@ -877,6 +899,8 @@ class Insights {
                 'server'      => $this->get_server_info(),
                 'wp'          => $this->get_wp_info(),
                 'ip_address'  => $this->get_user_ip_address(),
+                'theme'       => get_stylesheet(),
+                'version'     => $this->client->project_version,
             );
 
             $this->client->send_request( $data, 'deactivate' );
@@ -893,7 +917,7 @@ class Insights {
             return '';
         }
 
-        $ip = wp_remote_retrieve_body( $response );
+        $ip = trim( wp_remote_retrieve_body( $response ) );
 
         if ( ! filter_var( $ip, FILTER_VALIDATE_IP ) ) {
             return '';

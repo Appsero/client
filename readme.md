@@ -1,4 +1,4 @@
-# AppSero - Client
+# Appsero - Client
 
 - [Installation](#installation)
 - [Insights](#insights)
@@ -41,10 +41,10 @@ require __DIR__ . '/appsero/src/Client.php';
 
 AppSero can be used in both themes and plugins.
 
-The `AppSero\Client` class has *three* parameters:
+The `Appsero\Client` class has *three* parameters:
 
 ```php
-$client = new AppSero\Client( $hash, $name, $file );
+$client = new Appsero\Client( $hash, $name, $file );
 ```
 
 - **hash** (*string*, *required*) - The unique identifier for a plugin or theme.
@@ -65,11 +65,11 @@ You can obtain the **hash** for your plugin for the [AppSero Dashboard](https://
  */
 function appsero_init_tracker_appsero_test() {
 
-    if ( ! class_exists( 'AppSero\Client' ) ) {
+    if ( ! class_exists( 'Appsero\Client' ) ) {
         require_once __DIR__ . '/appsero/src/Client.php';
     }
 
-    $client = new AppSero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044891', 'Akismet', __FILE__ );
+    $client = new Appsero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044891', 'Akismet', __FILE__ );
 
     // Active insights
     $client->insights()->init();
@@ -87,7 +87,7 @@ function appsero_init_tracker_appsero_test() {
     $client->license()->add_settings_page( $args );
 }
 
-add_action( 'init', 'appsero_init_tracker_appsero_test' );
+appsero_init_tracker_appsero_test();
 ```
 
 > For plugins example code that needs to be used on your main plugin file.
@@ -98,7 +98,7 @@ add_action( 'init', 'appsero_init_tracker_appsero_test' );
 Sometimes you wouldn't want to show the notice, or want to customize the notice message. You can do that as well.
 
 ```php
-$client = new AppSero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
+$client = new Appsero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
 ```
 
 #### 1. Hiding the notice
@@ -138,7 +138,7 @@ $client->insights()
 In some cases you wouldn't want to show the optin message, but forcefully opt-in the user and send tracking data.
 
 ```php
-$client = new AppSero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
+$client = new Appsero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
 
 $insights = $client->insights();
 $insights->hide_notice()->init();
@@ -152,7 +152,7 @@ Check your plugin/theme is using with valid license or not, First create a globa
 If you are using it outside of same function make sure you global the variable before using the condition.
 
 ```php
-$client = new AppSero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
+$client = new Appsero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
 
 $args = array(
     'type'        => 'submenu',
@@ -173,4 +173,4 @@ if ( $twenty_twelve_license->is_valid()  ) {
 
 ## Credits
 
-Created and maintained by [AppSero](https://appsero.com).
+Created and maintained by [Appsero](https://appsero.com).
