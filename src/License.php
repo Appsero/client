@@ -58,7 +58,7 @@ class License {
     public function __construct( Client $client ) {
         $this->client = $client;
 
-        $this->option_key = 'appsero_' . md5( $this->client->slug ) . '_licenses';
+        $this->option_key = 'appsero_' . md5( $this->client->slug ) . '_manage_license';
     }
 
     /**
