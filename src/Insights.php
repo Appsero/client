@@ -242,12 +242,12 @@ class Insights {
      * @return mixed
      */
     protected function get_extra_data() {
-        $extra_data = $this->extra_data;
+        if ( is_callable( $this->extra_data ) ) {
+            return call_user_func( $this->extra_data );
+        }
 
-        if ( is_callable( $extra_data ) ) {
-            return $extra_data();
-        } else if ( is_array( $extra_data ) ) {
-            return $extra_data;
+        if ( is_array( $this->extra_data ) ) {
+            return $this->extra_data;
         }
 
         return array();

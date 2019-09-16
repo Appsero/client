@@ -119,13 +119,28 @@ $client->insights()
 
 #### 3. Adding extra data
 
-You can add extra metadata from your theme or plugin. In that case, the **keys** has to be whitelisted from the AppSero dashboard.
+You can add extra metadata from your theme or plugin. In that case, the **keys** has to be whitelisted from the Appsero dashboard.
+`add_extra` method also support callback as parameter, If you need database call then callback is best for you.
 
 ```php
 $metadata = array(
     'key'     => 'value',
     'another' => 'another_value'
 );
+$client->insights()
+       ->add_extra( $metadata )
+       ->init();
+```
+
+or
+
+```php
+$metadata = function () {
+    return array(
+        'key'     => 'value',
+        'another' => 'another_value'
+    );
+};
 $client->insights()
        ->add_extra( $metadata )
        ->init();
