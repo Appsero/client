@@ -44,6 +44,13 @@ class License {
     protected $success;
 
     /**
+     * Corn schedule hook name
+     *
+     * @var string
+     */
+    protected $schedule_hook;
+
+    /**
      * Set value for valid licnese
      *
      * @var boolean
@@ -59,6 +66,14 @@ class License {
         $this->client = $client;
 
         $this->option_key = 'appsero_' . md5( $this->client->slug ) . '_manage_license';
+
+        $this->schedule_hook = $this->client->slug . '_license_check_event';
+
+        // Run hook to check license status daily
+        add_action( $this->schedule_hook, array( $this, 'check_license_status' ) );
+
+        // Active/Deactive corn schedule
+        $this->run_schedule();
     }
 
     /**
@@ -149,7 +164,7 @@ class License {
             'page_title'  => 'Manage License',
             'menu_title'  => 'Manage License',
             'capability'  => 'manage_options',
-            'menu_slug'   => 'manage-license',
+            'menu_slug'   => $this->client->slug . '-manage-license',
             'icon_url'    => '',
             'position'    => null,
             'parent_slug' => '',
@@ -158,8 +173,6 @@ class License {
         $this->menu_args = wp_parse_args( $args, $defaults );
 
         add_action( 'admin_menu', array( $this, 'admin_menu' ) );
-
-        add_action( $this->client->slug . '_license_check_event', array( $this, 'check_license_status' ) );
     }
 
     /**
@@ -248,10 +261,6 @@ class License {
             case 'deactive':
                 $this->deactive_client_license( $form );
                 break;
-        }
-
-        if ( isset( $response['error'] ) && ! empty( $response['error'] ) ) {
-            $this->error = $response['error'];
         }
     }
 
@@ -563,6 +572,41 @@ class License {
             $this->menu_args['menu_slug'],
             array( $this, 'menu_output' )
         );
+    }
+
+    /**
+     * Schedule daily sicense checker event
+     */
+    public function schedule_cron_event() {
+        if ( ! wp_next_scheduled( $this->schedule_hook ) ) {
+            wp_schedule_event( time(), 'daily', $this->schedule_hook );
+
+            wp_schedule_single_event( time() + 20, $this->schedule_hook );
+        }
+    }
+
+    /**
+     * Clear any scheduled hook
+     */
+    public function clear_scheduler() {
+        wp_clear_scheduled_hook( $this->schedule_hook );
+    }
+
+    /**
+     * Enable/Disable schedule
+     */
+    private function run_schedule() {
+        switch ( $this->client->type ) {
+            case 'plugin':
+                register_activation_hook( $this->client->file, array( $this, 'schedule_cron_event' ) );
+                register_deactivation_hook( $this->client->file, array( $this, 'clear_scheduler' ) );
+                break;
+
+            case 'theme':
+                add_action( 'after_switch_theme', array( $this, 'schedule_cron_event' ) );
+                add_action( 'switch_theme', array( $this, 'clear_scheduler' ) );
+                break;
+        }
     }
 
 }
