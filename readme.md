@@ -2,6 +2,7 @@
 
 - [Installation](#installation)
 - [Insights](#insights)
+- [Dynamic Usage](#dynamic-usage)
 
 
 ## Installation
@@ -55,7 +56,7 @@ $client = new Appsero\Client( $hash, $name, $file );
 
 Please refer to the **installation** step before start using the class.
 
-You can obtain the **hash** for your plugin for the [AppSero Dashboard](https://dashboard.appsero.com). The 3rd parameter **must** have to be the main file of the plugin.
+You can obtain the **hash** for your plugin for the [Appsero Dashboard](https://dashboard.appsero.com). The 3rd parameter **must** have to be the main file of the plugin.
 
 ```php
 /**
@@ -89,6 +90,8 @@ function appsero_init_tracker_appsero_test() {
 
 appsero_init_tracker_appsero_test();
 ```
+
+Make sure you call this function directly, never use any action hook to call this function.
 
 > For plugins example code that needs to be used on your main plugin file.
 > For themes example code that needs to be used on your themes `functions.php` file.
