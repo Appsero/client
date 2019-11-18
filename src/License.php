@@ -172,7 +172,7 @@ class License {
 
         $this->menu_args = wp_parse_args( $args, $defaults );
 
-        add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+        add_action( 'admin_menu', array( $this, 'admin_menu' ), 99 );
     }
 
     /**
@@ -570,7 +570,8 @@ class License {
             $this->menu_args['menu_title'],
             $this->menu_args['capability'],
             $this->menu_args['menu_slug'],
-            array( $this, 'menu_output' )
+            array( $this, 'menu_output' ),
+            $this->menu_args['position']
         );
     }
 
@@ -583,7 +584,8 @@ class License {
             $this->menu_args['menu_title'],
             $this->menu_args['capability'],
             $this->menu_args['menu_slug'],
-            array( $this, 'menu_output' )
+            array( $this, 'menu_output' ),
+            $this->menu_args['position']
         );
     }
 
