@@ -34,14 +34,14 @@ class License {
      *
      * @var string
      */
-    protected $error;
+    public $error;
 
     /**
      * Success message on form submit
      *
      * @var string
      */
-    protected $success;
+    public $success;
 
     /**
      * Corn schedule hook name
@@ -202,7 +202,7 @@ class License {
     public function menu_output() {
 
         if ( isset( $_POST['submit'] ) ) {
-            $this->license_page_form( $_POST );
+            $this->license_form_submit( $_POST );
         }
 
         $license = get_option( $this->option_key, null );
@@ -225,6 +225,7 @@ class License {
                     <p>Active <strong><?php echo $this->client->name; ?></strong> by your license key to get professional support and automatic update from your WordPress dashboard.</p>
                     <form method="post" action="<?php $this->formActionUrl(); ?>" novalidate="novalidate" spellcheck="false">
                         <input type="hidden" name="_action" value="<?php echo $action; ?>">
+                        <input type="hidden" name="_nonce" value="<?php echo wp_create_nonce( $this->client->name ); ?>">
                         <div class="license-input-fields">
                             <div class="license-input-key">
                                 <svg enable-background="new 0 0 512 512" version="1.1" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
@@ -257,7 +258,17 @@ class License {
     /**
      * License form submit
      */
-    private function license_page_form( $form ) {
+    public function license_form_submit( $form ) {
+        if ( ! isset( $form['_nonce'], $form['_action'] ) ) {
+            $this->error = "Please add all information";
+            return;
+        }
+
+        if ( ! wp_verify_nonce( $form['_nonce'], $this->client->name ) ) {
+            $this->error = "You don't have permission to manage license.";
+            return;
+        }
+
         switch ( $form['_action'] ) {
             case 'active':
                 $this->active_client_license( $form );
