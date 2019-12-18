@@ -153,19 +153,6 @@ $client->insights()
 
 ### Dynamic Usage
 
-In some cases you wouldn't want to show the optin message, but forcefully opt-in the user and send tracking data.
-
-```php
-$client = new Appsero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
-
-$insights = $client->insights();
-$insights->hide_notice()->init();
-
-// somewhere in your code, opt-in the user forcefully
-// execute this only once
-$insights->optin();
-```
-
 Check your plugin/theme is using with valid license or not, First create a global variable of `License` object then use it anywhere in your code.
 If you are using it outside of same function make sure you global the variable before using the condition.
 
