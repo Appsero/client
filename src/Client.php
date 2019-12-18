@@ -67,6 +67,13 @@ class Client {
      */
     public $type;
 
+    /**
+     * textdomain
+     *
+     * @var string
+     */
+    public $textdomain;
+
 	/**
      * Initialize the class
      *
@@ -154,6 +161,7 @@ class Client {
 
             $this->project_version = $plugin_data['Version'];
             $this->type = 'plugin';
+            $this->textdomain = $this->slug;
 
         } else {
 
