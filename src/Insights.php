@@ -276,7 +276,7 @@ class Insights {
      *
      * @return bool
      */
-    private function tracking_allowed() {
+    public function tracking_allowed() {
         $allow_tracking = get_option( $this->client->slug . '_allow_tracking', 'no' );
 
         return $allow_tracking == 'yes';
@@ -297,7 +297,7 @@ class Insights {
      * @return boolean
      */
     private function notice_dismissed() {
-        $hide_notice = get_option( $this->client->slug . '_tracking_notice', 'no' );
+        $hide_notice = get_option( $this->client->slug . '_tracking_notice', null );
 
         if ( 'hide' == $hide_notice ) {
             return true;
@@ -373,7 +373,7 @@ class Insights {
 
             $notice .= ' (<a class="' . $this->client->slug . '-insights-data-we-collect" href="#">' . __( 'what we collect', $this->client->textdomain ) . '</a>)';
             $notice .= '<p class="description" style="display:none;">' . implode( ', ', $this->data_we_collect() ) . '. No sensitive data is tracked. ';
-            $notice .= 'Your data will be used by Appsero, <a href="https://appsero.com/privacy-policy/">learn more</a> about the data Appsero collects.</p>';
+            $notice .= 'We are using Appsero to collect your data. <a href="https://appsero.com/privacy-policy/">Learn more</a> about how Appsero collects and handle your data.</p>';
 
             echo '<div class="updated"><p>';
                 echo $notice;
@@ -755,7 +755,7 @@ class Insights {
                             </li>
                         <?php } ?>
                     </ul>
-                    <p class="wd-dr-modal-reasons-bottom">Your data is shared with <a href="https://appsero.com/">Appsero</a> to troubleshoot problems &amp; make product improvements. <a href="https://appsero.com/privacy-policy/">Learn more</a> about how Appsero handles your data.</p>
+                    <p class="wd-dr-modal-reasons-bottom">We share your data with <a href="https://appsero.com/">Appsero</a> to troubleshoot problems &amp; make product improvements. <a href="https://appsero.com/privacy-policy/">Learn more</a> about how Appsero handles your data.</p>
                 </div>
 
                 <div class="wd-dr-modal-footer">

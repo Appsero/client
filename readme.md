@@ -151,7 +151,7 @@ $client->insights()
 
 ---
 
-### Dynamic Usage
+### Check License Validity
 
 Check your plugin/theme is using with valid license or not, First create a global variable of `License` object then use it anywhere in your code.
 If you are using it outside of same function make sure you global the variable before using the condition.
