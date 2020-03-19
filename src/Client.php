@@ -207,4 +207,13 @@ class Client {
         return $response;
     }
 
+    /**
+     * Check if the current server is localhost
+     *
+     * @return boolean
+     */
+    public function is_local_server() {
+        return in_array( $_SERVER['REMOTE_ADDR'], array( '127.0.0.1', '::1' ) );
+    }
+
 }
