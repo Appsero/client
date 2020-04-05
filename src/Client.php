@@ -13,7 +13,7 @@ class Client {
      *
      * @var string
      */
-    public $version = '1.1.9';
+    public $version = '1.1.10';
 
     /**
      * Hash identifier of the plugin
