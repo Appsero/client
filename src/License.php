@@ -121,6 +121,7 @@ class License {
         $params = array(
             'license_key' => $license_key,
             'url'         => esc_url( home_url() ),
+            'is_local'    => $this->client->is_local_server(),
         );
 
         $response = $this->client->send_request( $params, $route, true );
