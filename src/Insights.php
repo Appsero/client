@@ -366,20 +366,22 @@ class Insights {
             $optout_url = add_query_arg( $this->client->slug . '_tracker_optout', 'true' );
 
             if ( empty( $this->notice ) ) {
-                $notice = sprintf( __( 'Want to help make <strong>%1$s</strong> even more awesome? Allow %1$s to collect non-sensitive diagnostic data and usage information.', $this->client->textdomain ), $this->client->name );
+                $notice = sprintf( $this->client->__trans( 'Want to help make <strong>%1$s</strong> even more awesome? Allow %1$s to collect non-sensitive diagnostic data and usage information.' ), $this->client->name );
             } else {
                 $notice = $this->notice;
             }
 
-            $notice .= ' (<a class="' . $this->client->slug . '-insights-data-we-collect" href="#">' . __( 'what we collect', $this->client->textdomain ) . '</a>)';
+            $policy_url = 'https://' . 'appsero.com/privacy-policy/';
+
+            $notice .= ' (<a class="' . $this->client->slug . '-insights-data-we-collect" href="#">' . $this->client->__trans( 'what we collect' ) . '</a>)';
             $notice .= '<p class="description" style="display:none;">' . implode( ', ', $this->data_we_collect() ) . '. No sensitive data is tracked. ';
-            $notice .= 'We are using Appsero to collect your data. <a href="https://appsero.com/privacy-policy/">Learn more</a> about how Appsero collects and handle your data.</p>';
+            $notice .= 'We are using Appsero to collect your data. <a href="' . $policy_url . '">Learn more</a> about how Appsero collects and handle your data.</p>';
 
             echo '<div class="updated"><p>';
                 echo $notice;
                 echo '</p><p class="submit">';
-                echo '&nbsp;<a href="' . esc_url( $optin_url ) . '" class="button-primary button-large">' . __( 'Allow', $this->client->textdomain ) . '</a>';
-                echo '&nbsp;<a href="' . esc_url( $optout_url ) . '" class="button-secondary button-large">' . __( 'No thanks', $this->client->textdomain ) . '</a>';
+                echo '&nbsp;<a href="' . esc_url( $optin_url ) . '" class="button-primary button-large">' . $this->client->__trans( 'Allow' ) . '</a>';
+                echo '&nbsp;<a href="' . esc_url( $optout_url ) . '" class="button-secondary button-large">' . $this->client->__trans( 'No thanks' ) . '</a>';
             echo '</p></div>';
 
             echo "<script type='text/javascript'>jQuery('." . $this->client->slug . "-insights-data-we-collect').on('click', function(e) {
@@ -637,11 +639,16 @@ class Insights {
         return $links;
     }
 
+    /**
+     * Plugin uninstall reasons
+     *
+     * @return array
+     */
     private function get_uninstall_reasons() {
         $reasons = array(
             array(
                 'id'          => 'could-not-understand',
-                'text'        => 'I couldn\'t understand how to make it work',
+                'text'        => "I couldn't understand how to make it work",
                 'type'        => 'textarea',
                 'placeholder' => 'Would you like us to assist you?'
             ),
@@ -665,13 +672,13 @@ class Insights {
             ),
             array(
                 'id'          => 'looking-for-other',
-                'text'        => 'It\'s not what I was looking for',
+                'text'        => "It's not what I was looking for",
                 'type'        => '',
                 'placeholder' => ''
             ),
             array(
                 'id'          => 'did-not-work-as-expected',
-                'text'        => 'The plugin didn\'t work as expected',
+                'text'        => "The plugin didn't work as expected",
                 'type'        => 'textarea',
                 'placeholder' => 'What did you expect?'
             ),
@@ -744,7 +751,7 @@ class Insights {
         <div class="wd-dr-modal" id="<?php echo $this->client->slug; ?>-wd-dr-modal">
             <div class="wd-dr-modal-wrap">
                 <div class="wd-dr-modal-header">
-                    <h3><?php _e( 'If you have a moment, please let us know why you are deactivating:', $this->client->textdomain ); ?></h3>
+                    <h3><?php $this->client->_etrans( 'If you have a moment, please let us know why you are deactivating:' ); ?></h3>
                 </div>
 
                 <div class="wd-dr-modal-body">
@@ -755,13 +762,16 @@ class Insights {
                             </li>
                         <?php } ?>
                     </ul>
-                    <p class="wd-dr-modal-reasons-bottom">We share your data with <a href="https://appsero.com/">Appsero</a> to troubleshoot problems &amp; make product improvements. <a href="https://appsero.com/privacy-policy/">Learn more</a> about how Appsero handles your data.</p>
+                    <p class="wd-dr-modal-reasons-bottom">
+                        We share your data with <a href="<?php echo 'https://appsero.com'; ?>">Appsero</a> to troubleshoot problems &amp; make product improvements.
+                        <a href="<?php echo 'https://appsero.com/privacy-policy'; ?>">Learn more</a> about how Appsero handles your data.
+                    </p>
                 </div>
 
                 <div class="wd-dr-modal-footer">
-                    <a href="#" class="dont-bother-me"><?php _e( 'I rather wouldn\'t say', $this->client->textdomain ); ?></a>
-                    <button class="button-secondary"><?php _e( 'Submit & Deactivate', $this->client->textdomain ); ?></button>
-                    <button class="button-primary"><?php _e( 'Cancel', $this->client->textdomain ); ?></button>
+                    <a href="#" class="dont-bother-me"><?php $this->client->_etrans( "I rather wouldn't say" ); ?></a>
+                    <button class="button-secondary"><?php $this->client->_etrans( 'Submit & Deactivate' ); ?></button>
+                    <button class="button-primary"><?php $this->client->_etrans( 'Cancel' ); ?></button>
                 </div>
             </div>
         </div>
@@ -954,7 +964,7 @@ class Insights {
         }
 
         if ( empty( $site_name ) ) {
-            $site_name = get_bloginfo( 'url' );
+            $site_name = esc_url( home_url() );
         }
 
         return $site_name;
