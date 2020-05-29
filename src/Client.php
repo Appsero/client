@@ -216,4 +216,18 @@ class Client {
         return in_array( $_SERVER['REMOTE_ADDR'], array( '127.0.0.1', '::1' ) );
     }
 
+    /**
+     * Translate function _e()
+     */
+    public function _etrans( $text ) {
+        call_user_func( '_e', $text, $this->textdomain );
+    }
+
+    /**
+     * Translate function __()
+     */
+    public function __trans( $text ) {
+        return call_user_func( '__', $text, $this->textdomain );
+    }
+
 }
