@@ -360,6 +360,11 @@ class Insights {
             return;
         }
 
+        // Allow slug-related notice disabling.
+        if ( ! apply_filters( $this->client->slug . '_display_admin_notice', true ) ) {
+        	return;
+        }
+
         // don't show tracking if a local server
         if ( ! $this->is_local_server() ) {
             $optin_url  = add_query_arg( $this->client->slug . '_tracker_optin', 'true' );
