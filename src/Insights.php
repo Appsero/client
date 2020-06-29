@@ -296,7 +296,7 @@ class Insights {
      *
      * @return boolean
      */
-    private function notice_dismissed() {
+    public function notice_dismissed() {
         $hide_notice = get_option( $this->client->slug . '_tracking_notice', null );
 
         if ( 'hide' == $hide_notice ) {
