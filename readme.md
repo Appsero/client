@@ -98,13 +98,13 @@ Make sure you call this function directly, never use any action hook to call thi
 
 ## More Usage
 
-Sometimes you wouldn't want to show the notice, or want to customize the notice message. You can do that as well.
-
 ```php
 $client = new Appsero\Client( 'a4a8da5b-b419-4656-98e9-4a42e9044892', 'Twenty Twelve', __FILE__ );
 ```
 
 #### 1. Hiding the notice
+
+Sometimes you wouldn't want to show the notice, or want to customize the notice message. You can do that as well.
 
 ```php
 $client->insights()
@@ -135,18 +135,28 @@ $client->insights()
        ->init();
 ```
 
-or
+Or if you want to run a query then pass callback, we will call the function when it is necessary.
 
 ```php
 $metadata = function () {
+    $total_posts = wp_count_posts();
+
     return array(
-        'key'     => 'value',
-        'another' => 'another_value'
+        'total_posts' => $total_posts,
+        'another'     => 'another_value'
     );
 };
 $client->insights()
        ->add_extra( $metadata )
        ->init();
+```
+
+#### 4. Set textdomain
+
+You may set your own textdomain to translate text.
+
+```php
+$client->set_textdomain( 'your-project-textdomain' );
 ```
 
 ---

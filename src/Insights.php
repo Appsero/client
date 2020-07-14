@@ -255,7 +255,7 @@ class Insights {
     /**
      * Explain the user which data we collect
      *
-     * @return string
+     * @return array
      */
     protected function data_we_collect() {
         $data = array(
@@ -659,7 +659,7 @@ class Insights {
         $reasons = array(
 			array(
 				'id'          => 'could-not-understand',
-				'text'        => $this->client->__trans( 'I couldn\'t understand how to make it work' ),
+				'text'        => $this->client->__trans( "I couldn't understand how to make it work" ),
 				'type'        => 'textarea',
 				'placeholder' => $this->client->__trans( 'Would you like us to assist you?' )
 			),
@@ -671,7 +671,7 @@ class Insights {
 			),
 			array(
 				'id'          => 'not-have-that-feature',
-				'text'        => $this->client->__trans( 'The plugin is great, but I need specific feature that you don\'t support' ),
+				'text'        => $this->client->__trans( "The plugin is great, but I need specific feature that you don't support" ),
 				'type'        => 'textarea',
 				'placeholder' => $this->client->__trans( 'Could you tell us more about that feature?' )
 			),
@@ -683,13 +683,13 @@ class Insights {
 			),
 			array(
 				'id'          => 'looking-for-other',
-				'text'        => $this->client->__trans( 'It\'s not what I was looking for' ),
+				'text'        => $this->client->__trans( "It's not what I was looking for" ),
 				'type'        => '',
 				'placeholder' => ''
 			),
 			array(
 				'id'          => 'did-not-work-as-expected',
-				'text'        => $this->client->__trans( 'The plugin didn\'t work as expected' ),
+				'text'        => $this->client->__trans( "The plugin didn't work as expected" ),
 				'type'        => 'textarea',
 				'placeholder' => $this->client->__trans( 'What did you expect?' )
 			),
@@ -700,6 +700,8 @@ class Insights {
 				'placeholder' => $this->client->__trans( 'Could you tell us a bit more?' )
 			),
 		);
+
+        return $reasons;
     }
 
     /**
@@ -755,7 +757,7 @@ class Insights {
                        <?php 
                        echo sprintf(
 	                       $this->client->__trans( 'We share your data with <a href="%1$s" target="_blank">Appsero</a> to troubleshoot problems &amp; make product improvements. <a href="%2$s" target="_blank">Learn more</a> about how Appsero handles your data.'),
-	                       esc_url( 'https://appsero.com/' )
+	                       esc_url( 'https://appsero.com/' ),
                            esc_url( 'https://appsero.com/privacy-policy' )
                        ); 
                        ?>

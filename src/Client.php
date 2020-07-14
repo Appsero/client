@@ -150,7 +150,6 @@ class Client {
     protected function set_basename_and_slug() {
 
         if ( strpos( $this->file, WP_CONTENT_DIR . '/themes/' ) === false ) {
-
             $this->basename = plugin_basename( $this->file );
 
             list( $this->slug, $mainfile) = explode( '/', $this->basename );
@@ -161,10 +160,7 @@ class Client {
 
             $this->project_version = $plugin_data['Version'];
             $this->type = 'plugin';
-            $this->textdomain = $this->slug;
-
         } else {
-
             $this->basename = str_replace( WP_CONTENT_DIR . '/themes/', '', $this->file );
 
             list( $this->slug, $mainfile) = explode( '/', $this->basename );
@@ -173,8 +169,9 @@ class Client {
 
             $this->project_version = $theme->version;
             $this->type = 'theme';
-
         }
+        
+        $this->textdomain = $this->slug;
     }
 
     /**
@@ -232,4 +229,10 @@ class Client {
         return call_user_func( '__', $text, $this->textdomain );
     }
 
+    /**
+     * Set project textdomain
+     */
+    public function set_textdomain( $textdomain ) {
+        $this->textdomain = $textdomain;
+    }
 }
