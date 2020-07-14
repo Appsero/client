@@ -211,7 +211,7 @@ class Insights {
         }
 
         $data = array(
-            'version'          => $this->client->project_version,
+            'client_version'   => $this->client->version,
             'url'              => esc_url( home_url() ),
             'site'             => $this->get_site_name(),
             'admin_email'      => get_option( 'admin_email' ),
@@ -224,8 +224,7 @@ class Insights {
             'active_plugins'   => count( $all_plugins['active_plugins'] ),
             'inactive_plugins' => count( $all_plugins['inactive_plugins'] ),
             'ip_address'       => $this->get_user_ip_address(),
-            'theme'            => get_stylesheet(),
-            'version'          => $this->client->project_version,
+            'project_version'  => $this->client->project_version,
         );
 
         // Add metadata
@@ -496,6 +495,14 @@ class Insights {
         $wp_data['locale']       = get_locale();
         $wp_data['version']      = get_bloginfo( 'version' );
         $wp_data['multisite']    = is_multisite() ? 'Yes' : 'No';
+        $wp_data['theme_slug']   = get_stylesheet();
+
+        $theme = wp_get_theme( $wp_data['theme_slug'] );
+
+        $wp_data['theme_name']    = $theme->get( 'Name' );
+        $wp_data['theme_version'] = $theme->get( 'Version' );
+        $wp_data['theme_uri']     = $theme->get( 'ThemeURI' );
+        $wp_data['theme_author']  = $theme->get( 'Author' );
 
         return $wp_data;
     }
@@ -560,6 +567,10 @@ class Insights {
 
         // Get user count based on user role
         foreach ( $user_count_data['avail_roles'] as $role => $count ) {
+            if ( ! $count ) {
+                continue;
+            }
+            
             $user_count[ $role ] = $count;
         }
 
@@ -703,31 +714,11 @@ class Insights {
         if ( ! isset( $_POST['reason_id'] ) ) {
             wp_send_json_error();
         }
-
-        $current_user = wp_get_current_user();
-
-        $data = array(
-            'hash'        => $this->client->hash,
-            'reason_id'   => sanitize_text_field( $_POST['reason_id'] ),
-            'reason_info' => isset( $_REQUEST['reason_info'] ) ? trim( stripslashes( $_REQUEST['reason_info'] ) ) : '',
-            'site'        => $this->get_site_name(),
-            'url'         => esc_url( home_url() ),
-            'admin_email' => get_option( 'admin_email' ),
-            'user_email'  => $current_user->user_email,
-            'first_name'  => $current_user->first_name,
-            'last_name'   => $current_user->last_name,
-            'server'      => $this->get_server_info(),
-            'wp'          => $this->get_wp_info(),
-            'ip_address'  => $this->get_user_ip_address(),
-            'theme'       => get_stylesheet(),
-            'version'     => $this->client->project_version,
-        );
-
-        // Add metadata
-        if ( $extra = $this->get_extra_data() ) {
-            $data['extra'] = $extra;
-        }
-
+        
+        $data                = $this->get_tracking_data();
+        $data['reason_id']   = sanitize_text_field( $_POST['reason_id'] );
+        $data['reason_info'] = isset( $_REQUEST['reason_info'] ) ? trim( stripslashes( $_REQUEST['reason_info'] ) ) : '';
+        
         $this->client->send_request( $data, 'deactivate' );
 
         wp_send_json_success();
@@ -910,26 +901,7 @@ class Insights {
     public function theme_deactivated( $new_name, $new_theme, $old_theme ) {
         // Make sure this is appsero theme
         if ( $old_theme->get_template() == $this->client->slug ) {
-            $current_user = wp_get_current_user();
-
-            $data = array(
-                'hash'        => $this->client->hash,
-                'reason_id'   => 'none',
-                'reason_info' => '',
-                'site'        => $this->get_site_name(),
-                'url'         => esc_url( home_url() ),
-                'admin_email' => get_option( 'admin_email' ),
-                'user_email'  => $current_user->user_email,
-                'first_name'  => $current_user->first_name,
-                'last_name'   => $current_user->last_name,
-                'server'      => $this->get_server_info(),
-                'wp'          => $this->get_wp_info(),
-                'ip_address'  => $this->get_user_ip_address(),
-                'theme'       => get_stylesheet(),
-                'version'     => $this->client->project_version,
-            );
-
-            $this->client->send_request( $data, 'deactivate' );
+            $this->client->send_request( $this->get_tracking_data(), 'deactivate' );
         }
     }
 
