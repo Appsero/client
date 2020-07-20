@@ -180,8 +180,10 @@ class Insights {
         if ( $last_send && $last_send > strtotime( '-1 week' ) ) {
             return;
         }
+        
+        $tracking_data = $this->get_tracking_data();
 
-        $response = $this->client->send_request( $this->get_tracking_data(), 'track' );
+        $response = $this->client->send_request( $tracking_data, 'track' );
 
         update_option( $this->client->slug . '_tracking_last_send', time() );
     }
@@ -211,7 +213,6 @@ class Insights {
         }
 
         $data = array(
-            'client_version'   => $this->client->version,
             'url'              => esc_url( home_url() ),
             'site'             => $this->get_site_name(),
             'admin_email'      => get_option( 'admin_email' ),
@@ -225,11 +226,21 @@ class Insights {
             'inactive_plugins' => count( $all_plugins['inactive_plugins'] ),
             'ip_address'       => $this->get_user_ip_address(),
             'project_version'  => $this->client->project_version,
+            'tracking_skipped' => false,
         );
 
         // Add metadata
         if ( $extra = $this->get_extra_data() ) {
             $data['extra'] = $extra;
+        }
+
+        // Check this has previously skipped tracking
+        $skipped = get_option( $this->client->slug . '_tracking_skipped' );
+
+        if ( $skipped === 'yes' ) {
+            delete_option( $this->client->slug . '_tracking_skipped' );
+
+            $data['tracking_skipped'] = true;
         }
 
         return apply_filters( $this->client->slug . '_tracker_data', $data );
@@ -360,36 +371,38 @@ class Insights {
         }
 
         // don't show tracking if a local server
-        if ( ! $this->is_local_server() ) {
-            $optin_url  = add_query_arg( $this->client->slug . '_tracker_optin', 'true' );
-            $optout_url = add_query_arg( $this->client->slug . '_tracker_optout', 'true' );
-
-            if ( empty( $this->notice ) ) {
-                $notice = sprintf( $this->client->__trans( 'Want to help make <strong>%1$s</strong> even more awesome? Allow %1$s to collect non-sensitive diagnostic data and usage information.' ), $this->client->name );
-            } else {
-                $notice = $this->notice;
-            }
-
-            $policy_url = 'https://' . 'appsero.com/privacy-policy/';
-
-            $notice .= ' (<a class="' . $this->client->slug . '-insights-data-we-collect" href="#">' . $this->client->__trans( 'what we collect' ) . '</a>)';
-            $notice .= '<p class="description" style="display:none;">' . implode( ', ', $this->data_we_collect() ) . '. No sensitive data is tracked. ';
-            $notice .= 'We are using Appsero to collect your data. <a href="' . $policy_url . '">Learn more</a> about how Appsero collects and handle your data.</p>';
-
-            echo '<div class="updated"><p>';
-                echo $notice;
-                echo '</p><p class="submit">';
-                echo '&nbsp;<a href="' . esc_url( $optin_url ) . '" class="button-primary button-large">' . $this->client->__trans( 'Allow' ) . '</a>';
-                echo '&nbsp;<a href="' . esc_url( $optout_url ) . '" class="button-secondary button-large">' . $this->client->__trans( 'No thanks' ) . '</a>';
-            echo '</p></div>';
-
-            echo "<script type='text/javascript'>jQuery('." . $this->client->slug . "-insights-data-we-collect').on('click', function(e) {
-                    e.preventDefault();
-                    jQuery(this).parents('.updated').find('p.description').slideToggle('fast');
-                });
-                </script>
-            ";
+        if ( $this->is_local_server() ) {
+            return;
         }
+
+        $optin_url  = add_query_arg( $this->client->slug . '_tracker_optin', 'true' );
+        $optout_url = add_query_arg( $this->client->slug . '_tracker_optout', 'true' );
+
+        if ( empty( $this->notice ) ) {
+            $notice = sprintf( $this->client->__trans( 'Want to help make <strong>%1$s</strong> even more awesome? Allow %1$s to collect non-sensitive diagnostic data and usage information.' ), $this->client->name );
+        } else {
+            $notice = $this->notice;
+        }
+
+        $policy_url = 'https://' . 'appsero.com/privacy-policy/';
+
+        $notice .= ' (<a class="' . $this->client->slug . '-insights-data-we-collect" href="#">' . $this->client->__trans( 'what we collect' ) . '</a>)';
+        $notice .= '<p class="description" style="display:none;">' . implode( ', ', $this->data_we_collect() ) . '. No sensitive data is tracked. ';
+        $notice .= 'We are using Appsero to collect your data. <a href="' . $policy_url . '">Learn more</a> about how Appsero collects and handle your data.</p>';
+
+        echo '<div class="updated"><p>';
+            echo $notice;
+            echo '</p><p class="submit">';
+            echo '&nbsp;<a href="' . esc_url( $optin_url ) . '" class="button-primary button-large">' . $this->client->__trans( 'Allow' ) . '</a>';
+            echo '&nbsp;<a href="' . esc_url( $optout_url ) . '" class="button-secondary button-large">' . $this->client->__trans( 'No thanks' ) . '</a>';
+        echo '</p></div>';
+
+        echo "<script type='text/javascript'>jQuery('." . $this->client->slug . "-insights-data-we-collect').on('click', function(e) {
+                e.preventDefault();
+                jQuery(this).parents('.updated').find('p.description').slideToggle('fast');
+            });
+            </script>
+        ";
     }
 
     /**
@@ -436,6 +449,8 @@ class Insights {
     public function optout() {
         update_option( $this->client->slug . '_allow_tracking', 'no' );
         update_option( $this->client->slug . '_tracking_notice', 'hide' );
+
+        $this->send_tracking_skipped_request();
 
         $this->clear_schedule_event();
     }
@@ -945,5 +960,25 @@ class Insights {
         }
 
         return $site_name;
+    }
+
+    /**
+     * Send request to appsero if user skip to send tracking data
+     */
+    private function send_tracking_skipped_request() {
+        $skipped = get_option( $this->client->slug . '_tracking_skipped' );
+
+        $data = [
+            'hash'               => $this->client->hash,
+            'previously_skipped' => false,
+        ];
+
+        if ( $skipped === 'yes' ) {
+            $data['previously_skipped'] = true;
+        } else {
+            update_option( $this->client->slug . '_tracking_skipped', 'yes' );
+        }
+
+        $this->client->send_request( $data, 'tracking-skipped' );
     }
 }
