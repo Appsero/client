@@ -223,7 +223,7 @@ class License {
                 <?php $this->show_license_page_card_header(); ?>
 
                 <div class="appsero-license-details">
-                    <p>Active <strong><?php echo $this->client->name; ?></strong> by your license key to get professional support and automatic update from your WordPress dashboard.</p>
+                    <p>Activate <strong><?php echo $this->client->name; ?></strong> by your license key to get professional support and automatic update from your WordPress dashboard.</p>
                     <form method="post" action="<?php $this->formActionUrl(); ?>" novalidate="novalidate" spellcheck="false">
                         <input type="hidden" name="_action" value="<?php echo $action; ?>">
                         <input type="hidden" name="_nonce" value="<?php echo wp_create_nonce( $this->client->name ); ?>">

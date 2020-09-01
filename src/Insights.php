@@ -180,8 +180,10 @@ class Insights {
         if ( $last_send && $last_send > strtotime( '-1 week' ) ) {
             return;
         }
+        
+        $tracking_data = $this->get_tracking_data();
 
-        $response = $this->client->send_request( $this->get_tracking_data(), 'track' );
+        $response = $this->client->send_request( $tracking_data, 'track' );
 
         update_option( $this->client->slug . '_tracking_last_send', time() );
     }
@@ -211,7 +213,6 @@ class Insights {
         }
 
         $data = array(
-            'version'          => $this->client->project_version,
             'url'              => esc_url( home_url() ),
             'site'             => $this->get_site_name(),
             'admin_email'      => get_option( 'admin_email' ),
@@ -224,13 +225,22 @@ class Insights {
             'active_plugins'   => count( $all_plugins['active_plugins'] ),
             'inactive_plugins' => count( $all_plugins['inactive_plugins'] ),
             'ip_address'       => $this->get_user_ip_address(),
-            'theme'            => get_stylesheet(),
-            'version'          => $this->client->project_version,
+            'project_version'  => $this->client->project_version,
+            'tracking_skipped' => false,
         );
 
         // Add metadata
         if ( $extra = $this->get_extra_data() ) {
             $data['extra'] = $extra;
+        }
+
+        // Check this has previously skipped tracking
+        $skipped = get_option( $this->client->slug . '_tracking_skipped' );
+
+        if ( $skipped === 'yes' ) {
+            delete_option( $this->client->slug . '_tracking_skipped' );
+
+            $data['tracking_skipped'] = true;
         }
 
         return apply_filters( $this->client->slug . '_tracker_data', $data );
@@ -256,7 +266,7 @@ class Insights {
     /**
      * Explain the user which data we collect
      *
-     * @return string
+     * @return array
      */
     protected function data_we_collect() {
         $data = array(
@@ -296,7 +306,7 @@ class Insights {
      *
      * @return boolean
      */
-    private function notice_dismissed() {
+    public function notice_dismissed() {
         $hide_notice = get_option( $this->client->slug . '_tracking_notice', null );
 
         if ( 'hide' == $hide_notice ) {
@@ -361,36 +371,38 @@ class Insights {
         }
 
         // don't show tracking if a local server
-        if ( ! $this->is_local_server() ) {
-            $optin_url  = add_query_arg( $this->client->slug . '_tracker_optin', 'true' );
-            $optout_url = add_query_arg( $this->client->slug . '_tracker_optout', 'true' );
-
-            if ( empty( $this->notice ) ) {
-                $notice = sprintf( $this->client->__trans( 'Want to help make <strong>%1$s</strong> even more awesome? Allow %1$s to collect non-sensitive diagnostic data and usage information.' ), $this->client->name );
-            } else {
-                $notice = $this->notice;
-            }
-
-            $policy_url = 'https://' . 'appsero.com/privacy-policy/';
-
-            $notice .= ' (<a class="' . $this->client->slug . '-insights-data-we-collect" href="#">' . $this->client->__trans( 'what we collect' ) . '</a>)';
-            $notice .= '<p class="description" style="display:none;">' . implode( ', ', $this->data_we_collect() ) . '. No sensitive data is tracked. ';
-            $notice .= 'We are using Appsero to collect your data. <a href="' . $policy_url . '">Learn more</a> about how Appsero collects and handle your data.</p>';
-
-            echo '<div class="updated"><p>';
-                echo $notice;
-                echo '</p><p class="submit">';
-                echo '&nbsp;<a href="' . esc_url( $optin_url ) . '" class="button-primary button-large">' . $this->client->__trans( 'Allow' ) . '</a>';
-                echo '&nbsp;<a href="' . esc_url( $optout_url ) . '" class="button-secondary button-large">' . $this->client->__trans( 'No thanks' ) . '</a>';
-            echo '</p></div>';
-
-            echo "<script type='text/javascript'>jQuery('." . $this->client->slug . "-insights-data-we-collect').on('click', function(e) {
-                    e.preventDefault();
-                    jQuery(this).parents('.updated').find('p.description').slideToggle('fast');
-                });
-                </script>
-            ";
+        if ( $this->is_local_server() ) {
+            return;
         }
+
+        $optin_url  = add_query_arg( $this->client->slug . '_tracker_optin', 'true' );
+        $optout_url = add_query_arg( $this->client->slug . '_tracker_optout', 'true' );
+
+        if ( empty( $this->notice ) ) {
+            $notice = sprintf( $this->client->__trans( 'Want to help make <strong>%1$s</strong> even more awesome? Allow %1$s to collect non-sensitive diagnostic data and usage information.' ), $this->client->name );
+        } else {
+            $notice = $this->notice;
+        }
+
+        $policy_url = 'https://' . 'appsero.com/privacy-policy/';
+
+        $notice .= ' (<a class="' . $this->client->slug . '-insights-data-we-collect" href="#">' . $this->client->__trans( 'what we collect' ) . '</a>)';
+        $notice .= '<p class="description" style="display:none;">' . implode( ', ', $this->data_we_collect() ) . '. No sensitive data is tracked. ';
+        $notice .= 'We are using Appsero to collect your data. <a href="' . $policy_url . '">Learn more</a> about how Appsero collects and handle your data.</p>';
+
+        echo '<div class="updated"><p>';
+            echo $notice;
+            echo '</p><p class="submit">';
+            echo '&nbsp;<a href="' . esc_url( $optin_url ) . '" class="button-primary button-large">' . $this->client->__trans( 'Allow' ) . '</a>';
+            echo '&nbsp;<a href="' . esc_url( $optout_url ) . '" class="button-secondary button-large">' . $this->client->__trans( 'No thanks' ) . '</a>';
+        echo '</p></div>';
+
+        echo "<script type='text/javascript'>jQuery('." . $this->client->slug . "-insights-data-we-collect').on('click', function(e) {
+                e.preventDefault();
+                jQuery(this).parents('.updated').find('p.description').slideToggle('fast');
+            });
+            </script>
+        ";
     }
 
     /**
@@ -437,6 +449,8 @@ class Insights {
     public function optout() {
         update_option( $this->client->slug . '_allow_tracking', 'no' );
         update_option( $this->client->slug . '_tracking_notice', 'hide' );
+
+        $this->send_tracking_skipped_request();
 
         $this->clear_schedule_event();
     }
@@ -496,6 +510,14 @@ class Insights {
         $wp_data['locale']       = get_locale();
         $wp_data['version']      = get_bloginfo( 'version' );
         $wp_data['multisite']    = is_multisite() ? 'Yes' : 'No';
+        $wp_data['theme_slug']   = get_stylesheet();
+
+        $theme = wp_get_theme( $wp_data['theme_slug'] );
+
+        $wp_data['theme_name']    = $theme->get( 'Name' );
+        $wp_data['theme_version'] = $theme->get( 'Version' );
+        $wp_data['theme_uri']     = $theme->get( 'ThemeURI' );
+        $wp_data['theme_author']  = $theme->get( 'Author' );
 
         return $wp_data;
     }
@@ -560,6 +582,10 @@ class Insights {
 
         // Get user count based on user role
         foreach ( $user_count_data['avail_roles'] as $role => $count ) {
+            if ( ! $count ) {
+                continue;
+            }
+            
             $user_count[ $role ] = $count;
         }
 
@@ -646,49 +672,49 @@ class Insights {
      */
     private function get_uninstall_reasons() {
         $reasons = array(
-            array(
-                'id'          => 'could-not-understand',
-                'text'        => "I couldn't understand how to make it work",
-                'type'        => 'textarea',
-                'placeholder' => 'Would you like us to assist you?'
-            ),
-            array(
-                'id'          => 'found-better-plugin',
-                'text'        => 'I found a better plugin',
-                'type'        => 'text',
-                'placeholder' => 'Which plugin?'
-            ),
-            array(
-                'id'          => 'not-have-that-feature',
-                'text'        => 'The plugin is great, but I need specific feature that you don\'t support',
-                'type'        => 'textarea',
-                'placeholder' => 'Could you tell us more about that feature?'
-            ),
-            array(
-                'id'          => 'is-not-working',
-                'text'        => 'The plugin is not working',
-                'type'        => 'textarea',
-                'placeholder' => 'Could you tell us a bit more whats not working?'
-            ),
-            array(
-                'id'          => 'looking-for-other',
-                'text'        => "It's not what I was looking for",
-                'type'        => '',
-                'placeholder' => ''
-            ),
-            array(
-                'id'          => 'did-not-work-as-expected',
-                'text'        => "The plugin didn't work as expected",
-                'type'        => 'textarea',
-                'placeholder' => 'What did you expect?'
-            ),
-            array(
-                'id'          => 'other',
-                'text'        => 'Other',
-                'type'        => 'textarea',
-                'placeholder' => 'Could you tell us a bit more?'
-            ),
-        );
+			array(
+				'id'          => 'could-not-understand',
+				'text'        => $this->client->__trans( "I couldn't understand how to make it work" ),
+				'type'        => 'textarea',
+				'placeholder' => $this->client->__trans( 'Would you like us to assist you?' )
+			),
+			array(
+				'id'          => 'found-better-plugin',
+				'text'        => $this->client->__trans( 'I found a better plugin' ),
+				'type'        => 'text',
+				'placeholder' => $this->client->__trans( 'Which plugin?' )
+			),
+			array(
+				'id'          => 'not-have-that-feature',
+				'text'        => $this->client->__trans( "The plugin is great, but I need specific feature that you don't support" ),
+				'type'        => 'textarea',
+				'placeholder' => $this->client->__trans( 'Could you tell us more about that feature?' )
+			),
+			array(
+				'id'          => 'is-not-working',
+				'text'        => $this->client->__trans( 'The plugin is not working' ),
+				'type'        => 'textarea',
+				'placeholder' => $this->client->__trans( 'Could you tell us a bit more whats not working?' )
+			),
+			array(
+				'id'          => 'looking-for-other',
+				'text'        => $this->client->__trans( "It's not what I was looking for" ),
+				'type'        => '',
+				'placeholder' => ''
+			),
+			array(
+				'id'          => 'did-not-work-as-expected',
+				'text'        => $this->client->__trans( "The plugin didn't work as expected" ),
+				'type'        => 'textarea',
+				'placeholder' => $this->client->__trans( 'What did you expect?' )
+			),
+			array(
+				'id'          => 'other',
+				'text'        => $this->client->__trans( 'Other' ),
+				'type'        => 'textarea',
+				'placeholder' => $this->client->__trans( 'Could you tell us a bit more?' )
+			),
+		);
 
         return $reasons;
     }
@@ -703,31 +729,11 @@ class Insights {
         if ( ! isset( $_POST['reason_id'] ) ) {
             wp_send_json_error();
         }
-
-        $current_user = wp_get_current_user();
-
-        $data = array(
-            'hash'        => $this->client->hash,
-            'reason_id'   => sanitize_text_field( $_POST['reason_id'] ),
-            'reason_info' => isset( $_REQUEST['reason_info'] ) ? trim( stripslashes( $_REQUEST['reason_info'] ) ) : '',
-            'site'        => $this->get_site_name(),
-            'url'         => esc_url( home_url() ),
-            'admin_email' => get_option( 'admin_email' ),
-            'user_email'  => $current_user->user_email,
-            'first_name'  => $current_user->first_name,
-            'last_name'   => $current_user->last_name,
-            'server'      => $this->get_server_info(),
-            'wp'          => $this->get_wp_info(),
-            'ip_address'  => $this->get_user_ip_address(),
-            'theme'       => get_stylesheet(),
-            'version'     => $this->client->project_version,
-        );
-
-        // Add metadata
-        if ( $extra = $this->get_extra_data() ) {
-            $data['extra'] = $extra;
-        }
-
+        
+        $data                = $this->get_tracking_data();
+        $data['reason_id']   = sanitize_text_field( $_POST['reason_id'] );
+        $data['reason_info'] = isset( $_REQUEST['reason_info'] ) ? trim( stripslashes( $_REQUEST['reason_info'] ) ) : '';
+        
         $this->client->send_request( $data, 'deactivate' );
 
         wp_send_json_success();
@@ -763,8 +769,13 @@ class Insights {
                         <?php } ?>
                     </ul>
                     <p class="wd-dr-modal-reasons-bottom">
-                        We share your data with <a href="<?php echo 'https://appsero.com'; ?>">Appsero</a> to troubleshoot problems &amp; make product improvements.
-                        <a href="<?php echo 'https://appsero.com/privacy-policy'; ?>">Learn more</a> about how Appsero handles your data.
+                       <?php 
+                       echo sprintf(
+	                       $this->client->__trans( 'We share your data with <a href="%1$s" target="_blank">Appsero</a> to troubleshoot problems &amp; make product improvements. <a href="%2$s" target="_blank">Learn more</a> about how Appsero handles your data.'),
+	                       esc_url( 'https://appsero.com/' ),
+                           esc_url( 'https://appsero.com/privacy-policy' )
+                       ); 
+                       ?>
                     </p>
                 </div>
 
@@ -910,26 +921,7 @@ class Insights {
     public function theme_deactivated( $new_name, $new_theme, $old_theme ) {
         // Make sure this is appsero theme
         if ( $old_theme->get_template() == $this->client->slug ) {
-            $current_user = wp_get_current_user();
-
-            $data = array(
-                'hash'        => $this->client->hash,
-                'reason_id'   => 'none',
-                'reason_info' => '',
-                'site'        => $this->get_site_name(),
-                'url'         => esc_url( home_url() ),
-                'admin_email' => get_option( 'admin_email' ),
-                'user_email'  => $current_user->user_email,
-                'first_name'  => $current_user->first_name,
-                'last_name'   => $current_user->last_name,
-                'server'      => $this->get_server_info(),
-                'wp'          => $this->get_wp_info(),
-                'ip_address'  => $this->get_user_ip_address(),
-                'theme'       => get_stylesheet(),
-                'version'     => $this->client->project_version,
-            );
-
-            $this->client->send_request( $data, 'deactivate' );
+            $this->client->send_request( $this->get_tracking_data(), 'deactivate' );
         }
     }
 
@@ -968,5 +960,25 @@ class Insights {
         }
 
         return $site_name;
+    }
+
+    /**
+     * Send request to appsero if user skip to send tracking data
+     */
+    private function send_tracking_skipped_request() {
+        $skipped = get_option( $this->client->slug . '_tracking_skipped' );
+
+        $data = [
+            'hash'               => $this->client->hash,
+            'previously_skipped' => false,
+        ];
+
+        if ( $skipped === 'yes' ) {
+            $data['previously_skipped'] = true;
+        } else {
+            update_option( $this->client->slug . '_tracking_skipped', 'yes' );
+        }
+
+        $this->client->send_request( $data, 'tracking-skipped' );
     }
 }
