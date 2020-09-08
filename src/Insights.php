@@ -180,7 +180,7 @@ class Insights {
         if ( $last_send && $last_send > strtotime( '-1 week' ) ) {
             return;
         }
-        
+
         $tracking_data = $this->get_tracking_data();
 
         $response = $this->client->send_request( $tracking_data, 'track' );
@@ -585,7 +585,7 @@ class Insights {
             if ( ! $count ) {
                 continue;
             }
-            
+
             $user_count[ $role ] = $count;
         }
 
@@ -729,11 +729,11 @@ class Insights {
         if ( ! isset( $_POST['reason_id'] ) ) {
             wp_send_json_error();
         }
-        
+
         $data                = $this->get_tracking_data();
         $data['reason_id']   = sanitize_text_field( $_POST['reason_id'] );
         $data['reason_info'] = isset( $_REQUEST['reason_info'] ) ? trim( stripslashes( $_REQUEST['reason_info'] ) ) : '';
-        
+
         $this->client->send_request( $data, 'deactivate' );
 
         wp_send_json_success();
@@ -753,6 +753,7 @@ class Insights {
 
         $this->deactivation_modal_styles();
         $reasons = $this->get_uninstall_reasons();
+        $custom_reasons = apply_filters( 'appsero_custom_deactivation_reasons', [] );
         ?>
 
         <div class="wd-dr-modal" id="<?php echo $this->client->slug; ?>-wd-dr-modal">
@@ -766,21 +767,34 @@ class Insights {
                         <?php foreach ( $reasons as $reason ) { ?>
                             <li data-placeholder="<?php echo esc_attr( $reason['placeholder'] ); ?>">
                                 <label>
-                                    <input type="radio" name="selected-reason" value="<?php echo $reason['id']; ?>"> 
+                                    <input type="radio" name="selected-reason" value="<?php echo $reason['id']; ?>">
                                     <div class="wd-de-reason-icon"><?php echo $reason['icon']; ?></div>
                                     <div class="wd-de-reason-text"><?php echo $reason['text']; ?></div>
                                 </label>
                             </li>
                         <?php } ?>
                     </ul>
+                    <?php if ( $custom_reasons && is_array( $custom_reasons ) ) : ?>
+                    <ul class="wd-de-reasons wd-de-others-reasons">
+                        <?php foreach ( $custom_reasons as $reason ) { ?>
+                            <li data-placeholder="<?php echo esc_attr( $reason['placeholder'] ); ?>" data-customreason="true">
+                                <label>
+                                    <input type="radio" name="selected-reason" value="<?php echo $reason['id']; ?>">
+                                    <div class="wd-de-reason-icon"><?php echo $reason['icon']; ?></div>
+                                    <div class="wd-de-reason-text"><?php echo $reason['text']; ?></div>
+                                </label>
+                            </li>
+                        <?php } ?>
+                    </ul>
+                    <?php endif; ?>
                     <div class="wd-dr-modal-reason-input"><textarea></textarea></div>
                     <p class="wd-dr-modal-reasons-bottom">
-                       <?php 
+                       <?php
                        echo sprintf(
 	                       $this->client->__trans( 'We share your data with <a href="%1$s" target="_blank">Appsero</a> to troubleshoot problems &amp; make product improvements. <a href="%2$s" target="_blank">Learn more</a> about how Appsero handles your data.'),
 	                       esc_url( 'https://appsero.com/' ),
                            esc_url( 'https://appsero.com/privacy-policy' )
-                       ); 
+                       );
                        ?>
                     </p>
                 </div>
@@ -817,10 +831,27 @@ class Insights {
                     // Reason change
                     modal.on('click', 'input[type="radio"]', function () {
                         var parent = $(this).parents('li');
-                        parent.siblings().removeClass('wd-de-reason-selected');
+                        var isCustomReason = parent.data('customreason');
+                        var inputValue = $(this).val();
+
+                        if ( isCustomReason ) {
+                            $('ul.wd-de-reasons.wd-de-others-reasons li').removeClass('wd-de-reason-selected');
+                        } else {
+                            $('ul.wd-de-reasons li').removeClass('wd-de-reason-selected');
+
+                            if ( "other" != inputValue ) {
+                                $('ul.wd-de-reasons.wd-de-others-reasons').css('display', 'none');
+                            }
+                        }
+
+                        // Show if has custom reasons
+                        if ( "other" == inputValue ) {
+                            $('ul.wd-de-reasons.wd-de-others-reasons').css('display', 'flex');
+                        }
+
                         parent.addClass('wd-de-reason-selected');
                         $('.wd-dr-modal-reason-input').show();
-                        
+
                         $('.wd-dr-modal-reason-input textarea').attr('placeholder', parent.data('placeholder')).focus();
                     });
 
@@ -992,6 +1023,10 @@ class Insights {
                 margin: 0 -5px 0 -5px;
                 padding: 15px 0 20px 0;
             }
+            ul.wd-de-reasons.wd-de-others-reasons {
+                padding-top: 0;
+                display: none;
+            }
             ul.wd-de-reasons li {
                 padding: 0 5px;
                 margin: 0;
@@ -1034,7 +1069,7 @@ class Insights {
                 background-color: #3B86FF;
                 border-color: #3B86FF;
             }
-            li.wd-de-reason-selected .wd-de-reason-icon svg, 
+            li.wd-de-reason-selected .wd-de-reason-icon svg,
             li.wd-de-reason-selected .wd-de-reason-icon svg g {
                 fill: #fff;
             }

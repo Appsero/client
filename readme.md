@@ -211,6 +211,34 @@ if ( ! $twenty_twelve_license->error ) {
 }
 ```
 
+### Set Custom Deactivation Reasons
+
+First set your deactivation reasons in Appsero dashboard then map them in your plugin/theme using filter hook.
+
+- **id** is the deactivation slug
+- **text** is the deactivation title
+- **placeholder** will show on textarea field
+- **icon** You can set SVG icon with 23x23 size
+
+```php
+add_filter( 'appsero_custom_deactivation_reasons', function () {
+    return [
+        [
+            'id'          => 'looks-buggy',
+            'text'        => 'Looks buggy',
+            'placeholder' => 'Can you please tell which feature looks buggy?',
+            'icon'        => '',
+        ],
+        [
+            'id'          => 'bad-ui',
+            'text'        => 'Bad UI',
+            'placeholder' => 'Could you tell us a bit more?',
+            'icon'        => '',
+        ],
+    ];
+} );
+```
+
 ## Credits
 
 Created and maintained by [Appsero](https://appsero.com).
