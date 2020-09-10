@@ -13,7 +13,7 @@ class Client {
      *
      * @var string
      */
-    public $version = '1.1.12';
+    public $version = '1.2.0';
 
     /**
      * Hash identifier of the plugin
@@ -170,7 +170,7 @@ class Client {
             $this->project_version = $theme->version;
             $this->type = 'theme';
         }
-        
+
         $this->textdomain = $this->slug;
     }
 
