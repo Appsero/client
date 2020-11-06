@@ -190,6 +190,9 @@ Or check by pricing plan title
 if ( $twenty_twelve_license->is_valid_by( 'title', 'Business' ) ) {
     // Your special code here
 }
+
+// Set custom options key for storing the license info
+$twenty_twelve_license->set_option_key( 'my_plugin_license' );
 ```
 
 ### Use your own license form

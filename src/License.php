@@ -71,7 +71,7 @@ class License {
         $this->schedule_hook = $this->client->slug . '_license_check_event';
 
         // Run hook to check license status daily
-        add_action( $this->schedule_hook, [ $this, 'check_license_status' ] );
+        add_action( $this->schedule_hook, array( $this, 'check_license_status' ) );
 
         // Active/Deactive corn schedule
         $this->run_schedule();
