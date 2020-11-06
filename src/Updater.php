@@ -143,8 +143,7 @@ class Updater {
      */
     private function get_project_latest_version() {
 
-        $license_option_key = 'appsero_' . md5( $this->client->slug ) . '_manage_license';
-        $license = get_option( $license_option_key, null );
+        $license = $this->client->license()->get_license();
 
         $params = array(
             'version'     => $this->client->project_version,
