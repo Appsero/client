@@ -711,10 +711,12 @@ class License {
      * Form action URL
      */
     private function formActionUrl() {
-        echo add_query_arg(
-            array( 'page' => $_GET['page'] ),
+        $url = add_query_arg(
+            $_GET,
             admin_url( basename( $_SERVER['SCRIPT_NAME'] ) )
         );
+
+        echo apply_filters( 'appsero_client_license_form_action', $url );
     }
 
     /**
