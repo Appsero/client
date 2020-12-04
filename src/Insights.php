@@ -165,11 +165,6 @@ class Insights {
      * @return void
      */
     public function send_tracking_data( $override = false ) {
-        // skip on AJAX Requests
-        if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-            return;
-        }
-
         if ( ! $this->tracking_allowed() && ! $override ) {
             return;
         }
