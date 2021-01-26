@@ -459,8 +459,20 @@ class Insights {
      */
     public function get_post_count( $post_type ) {
         global $wpdb;
+	$post_count = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                "
+                    SELECT count(ID)
+                    FROM $wpdb->posts
+                    WHERE post_type = %s
+                    and post_status = 'publish'
+                ",
+                $post_type
+            )
+        );
+        return $post_count;
 
-        return (int) $wpdb->get_var( "SELECT count(ID) FROM $wpdb->posts WHERE post_type = '$post_type' and post_status = 'publish'");
+        //return (int) $wpdb->get_var( "SELECT count(ID) FROM $wpdb->posts WHERE post_type = '$post_type' and post_status = 'publish'");
     }
 
     /**
