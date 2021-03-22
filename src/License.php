@@ -70,6 +70,9 @@ class License {
 
         $this->schedule_hook = $this->client->slug . '_license_check_event';
 
+        // Creating WP Ajax Endpoint to refresh license remotely
+        add_action( "wp_ajax_appsero_refresh_license_" . $this->client->hash, array( $this, 'refresh_license_api' ) );
+
         // Run hook to check license status daily
         add_action( $this->schedule_hook, array( $this, 'check_license_status' ) );
 
@@ -179,6 +182,14 @@ class License {
         }
 
         return $response;
+    }
+
+    /**
+     * License Refresh Endpoint
+     */
+    public function refresh_license_api() {
+        $this->check_license_status();
+        return wp_send_json( ["message"=>"License Refreshed successfully"], 200 );
     }
 
     /**
@@ -308,6 +319,10 @@ class License {
 
             case 'deactive':
                 $this->deactive_client_license( $form );
+                break;
+
+            case 'refresh':
+                $this->refresh_client_license( $form );
                 break;
         }
     }
@@ -488,6 +503,18 @@ class License {
             .single-license-info p.occupied {
                 color: #E40055;
             }
+            .right-form {
+                margin-left: auto;
+            }
+            .refresh-button {
+                padding: 5px 10px;
+                border: 1px solid #0071a1;
+                border-radius: 3px;
+                margin-left: auto;
+                background: #f3f5f6;
+                color: #0071a1;
+                cursor: pointer;
+            }
         </style>
         <?php
     }
@@ -556,6 +583,18 @@ class License {
                 <path d="m150 1e-3c-82.839 0-150 67.158-150 150 0 82.837 67.156 150 150 150s150-67.161 150-150c0-82.839-67.161-150-150-150zm46.09 227.12h-92.173c-9.734 0-17.626-7.892-17.626-17.629v-56.919c0-8.491 6.007-15.582 14.003-17.25v-25.697c0-27.409 22.3-49.711 49.711-49.711 27.409 0 49.709 22.3 49.709 49.711v25.697c7.993 1.673 14 8.759 14 17.25v56.919h2e-3c0 9.736-7.892 17.629-17.626 17.629z"/>
             </svg>
             <span>Activate License</span>
+        <?php if( $license && $license['key'] ) : ?>
+            <form method="post" class="right-form" action="<?php $this->formActionUrl(); ?>" novalidate="novalidate" spellcheck="false">
+                <input type="hidden" name="_action" value="refresh">
+                <input type="hidden" name="_nonce" value="<?php echo wp_create_nonce( $this->client->name ); ?>">
+                <button type="submit" name="submit" class="refresh-button">
+                    <svg style="height:16px;width:16px;" viewBox="0 0 20 20">
+                        <path d="M12.319,5.792L8.836,2.328C8.589,2.08,8.269,2.295,8.269,2.573v1.534C8.115,4.091,7.937,4.084,7.783,4.084c-2.592,0-4.7,2.097-4.7,4.676c0,1.749,0.968,3.337,2.528,4.146c0.352,0.194,0.651-0.257,0.424-0.529c-0.415-0.492-0.643-1.118-0.643-1.762c0-1.514,1.261-2.747,2.787-2.747c0.029,0,0.06,0,0.09,0.002v1.632c0,0.335,0.378,0.435,0.568,0.245l3.483-3.464C12.455,6.147,12.455,5.928,12.319,5.792 M8.938,8.67V7.554c0-0.411-0.528-0.377-0.781-0.377c-1.906,0-3.457,1.542-3.457,3.438c0,0.271,0.033,0.542,0.097,0.805C4.149,10.7,3.775,9.762,3.775,8.76c0-2.197,1.798-3.985,4.008-3.985c0.251,0,0.501,0.023,0.744,0.069c0.212,0.039,0.412-0.124,0.412-0.34v-1.1l2.646,2.633L8.938,8.67z M14.389,7.107c-0.34-0.18-0.662,0.244-0.424,0.529c0.416,0.493,0.644,1.118,0.644,1.762c0,1.515-1.272,2.747-2.798,2.747c-0.029,0-0.061,0-0.089-0.002v-1.631c0-0.354-0.382-0.419-0.558-0.246l-3.482,3.465c-0.136,0.136-0.136,0.355,0,0.49l3.482,3.465c0.189,0.186,0.568,0.096,0.568-0.245v-1.533c0.153,0.016,0.331,0.022,0.484,0.022c2.592,0,4.7-2.098,4.7-4.677C16.917,9.506,15.948,7.917,14.389,7.107 M12.217,15.238c-0.251,0-0.501-0.022-0.743-0.069c-0.212-0.039-0.411,0.125-0.411,0.341v1.101l-2.646-2.634l2.646-2.633v1.116c0,0.174,0.126,0.318,0.295,0.343c0.158,0.024,0.318,0.034,0.486,0.034c1.905,0,3.456-1.542,3.456-3.438c0-0.271-0.032-0.541-0.097-0.804c0.648,0.719,1.022,1.659,1.022,2.66C16.226,13.451,14.428,15.238,12.217,15.238"></path>
+                    </svg>
+                    Refresh License
+                </button>
+            </form>
+        <?php endif; ?>
         </div>
         <?php
     }
@@ -623,6 +662,22 @@ class License {
         }
 
         $this->success = 'License deactivated successfully.';
+    }
+
+    /**
+     * Refresh Client License
+     */
+    private function refresh_client_license( $form = null ) {
+        $license = $this->get_license();
+
+        if( !$license || ! isset( $license['key'] ) || empty( $license['key'] ) ) {
+            $this->error = "License key not found";
+            return;
+        }
+
+        $this->check_license_status();
+
+        $this->success = 'License refreshed successfully.';
     }
 
     /**
