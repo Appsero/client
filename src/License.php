@@ -170,7 +170,7 @@ class License {
         if ( empty( $response ) || isset( $response['exception'] )) {
             return array(
                 'success' => false,
-                'error'   => 'Unknown error occurred, Please try again.'
+                'error'   => $this->client->__trans( 'Unknown error occurred, Please try again.' ),
             );
         }
 
@@ -189,7 +189,13 @@ class License {
      */
     public function refresh_license_api() {
         $this->check_license_status();
-        return wp_send_json( ["message"=>"License Refreshed successfully"], 200 );
+
+        return wp_send_json(
+            array(
+                'message' => 'License refreshed successfully.'
+            ),
+            200
+        );
     }
 
     /**
@@ -301,13 +307,13 @@ class License {
      */
     public function license_form_submit( $form ) {
         if ( ! isset( $form['_nonce'], $form['_action'] ) ) {
-            $this->error = 'Please add all information';
+            $this->error = $this->client->__trans( 'Please add all information' );
 
             return;
         }
 
         if ( ! wp_verify_nonce( $form['_nonce'], $this->client->name ) ) {
-            $this->error = "You don't have permission to manage license.";
+            $this->error = $this->client->__trans( "You don't have permission to manage license." );
 
             return;
         }
@@ -586,7 +592,7 @@ class License {
                 <path d="m150 85.849c-13.111 0-23.775 10.665-23.775 23.775v25.319h47.548v-25.319c-1e-3 -13.108-10.665-23.775-23.773-23.775z"/>
                 <path d="m150 1e-3c-82.839 0-150 67.158-150 150 0 82.837 67.156 150 150 150s150-67.161 150-150c0-82.839-67.161-150-150-150zm46.09 227.12h-92.173c-9.734 0-17.626-7.892-17.626-17.629v-56.919c0-8.491 6.007-15.582 14.003-17.25v-25.697c0-27.409 22.3-49.711 49.711-49.711 27.409 0 49.709 22.3 49.709 49.711v25.697c7.993 1.673 14 8.759 14 17.25v56.919h2e-3c0 9.736-7.892 17.629-17.626 17.629z"/>
             </svg>
-            <span>Activate License</span>
+            <span><?php echo $this->client->__trans( 'Activate License' ); ?></span>
 
             <?php if ( $license && $license['key'] ) : ?>
             <form method="post" class="appsero-license-right-form" action="<?php $this->form_action_url(); ?>" novalidate="novalidate" spellcheck="false">
@@ -608,7 +614,7 @@ class License {
      */
     private function active_client_license( $form ) {
         if ( empty( $form['license_key'] ) ) {
-            $this->error = 'The license key field is required.';
+            $this->error = $this->client->__trans( 'The license key field is required.' );
 
             return;
         }
@@ -617,7 +623,7 @@ class License {
         $response    = $this->activate( $license_key );
 
         if ( ! $response['success'] ) {
-            $this->error = $response['error'] ? $response['error'] : 'Unknown error occurred.';
+            $this->error = $response['error'] ? $response['error'] : $this->client->__trans( 'Unknown error occurred.' );
 
             return;
         }
@@ -635,7 +641,7 @@ class License {
 
         update_option( $this->option_key, $data, false );
 
-        $this->success = 'License activated successfully.';
+        $this->success = $this->client->__trans( 'License activated successfully.' );
     }
 
     /**
@@ -645,7 +651,7 @@ class License {
         $license = $this->get_license();
 
         if ( empty( $license['key'] ) ) {
-            $this->error = 'License key not found.';
+            $this->error = $this->client->__trans( 'License key not found.' );
 
             return;
         }
@@ -660,12 +666,12 @@ class License {
         update_option( $this->option_key, $data, false );
 
         if ( ! $response['success'] ) {
-            $this->error = $response['error'] ? $response['error'] : 'Unknown error occurred.';
+            $this->error = $response['error'] ? $response['error'] : $this->client->__trans( 'Unknown error occurred.' );
 
             return;
         }
 
-        $this->success = 'License deactivated successfully.';
+        $this->success = $this->client->__trans( 'License deactivated successfully.' );
     }
 
     /**
@@ -675,13 +681,13 @@ class License {
         $license = $this->get_license();
 
         if( !$license || ! isset( $license['key'] ) || empty( $license['key'] ) ) {
-            $this->error = "License key not found";
+            $this->error = $this->client->__trans( "License key not found" );
             return;
         }
 
         $this->check_license_status();
 
-        $this->success = 'License refreshed successfully.';
+        $this->success = $this->client->__trans( 'License refreshed successfully.' );
     }
 
     /**
