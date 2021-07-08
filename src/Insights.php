@@ -222,6 +222,7 @@ class Insights {
             'ip_address'       => $this->get_user_ip_address(),
             'project_version'  => $this->client->project_version,
             'tracking_skipped' => false,
+            'is_local'         => $this->is_local_server(),
         );
 
         // Add metadata
@@ -317,9 +318,17 @@ class Insights {
      * @return boolean
      */
     private function is_local_server() {
-        return false;
 
-        $is_local = in_array( $_SERVER['REMOTE_ADDR'], array( '127.0.0.1', '::1' ) );
+        $host       = $_SERVER['HTTP_HOST'];
+        $ip         = $_SERVER['SERVER_ADDR'];
+        $is_local   = false;
+
+        if( in_array( $ip,array( '127.0.0.1', '::1' ) )
+            || ! strpos( $host, '.' )
+            || in_array( strrchr( $host, '.' ), array( '.test', '.testing', '.local', '.localhost', '.localdomain' ) )
+        ) {
+            $is_local = true;
+        }
 
         return apply_filters( 'appsero_is_local', $is_local );
     }
