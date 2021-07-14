@@ -39,9 +39,17 @@ class Insights {
     protected $client;
 
     /**
+     * @var boolean
+     */
+    private $plugin_data = false;
+
+
+    /**
      * Initialize the class
      *
-     * @param AppSero\Client
+     * @param      $client
+     * @param null $name
+     * @param null $file
      */
     public function __construct( $client, $name = null, $file = null ) {
 
@@ -61,6 +69,17 @@ class Insights {
      */
     public function hide_notice() {
         $this->show_notice = false;
+
+        return $this;
+    }
+
+    /**
+     * Add plugin data if needed
+     *
+     * @return \self
+     */
+    public function add_plugin_data() {
+        $this->plugin_data = true;
 
         return $this;
     }
@@ -224,6 +243,24 @@ class Insights {
             'tracking_skipped' => false,
             'is_local'         => $this->is_local_server(),
         );
+
+        $plugins_data = array();
+        foreach ( $all_plugins['active_plugins'] as $slug => $plugin) {
+
+            $slug = strstr( $slug, '/', true );
+            if( ! $slug )
+                continue;
+
+            $plugins_data[ $slug ] = array(
+                'name' => isset( $plugin['name'] ) ? $plugin['name'] : '',
+                'version' => isset( $plugin['version'] ) ? $plugin['version'] : '',
+            );
+        }
+
+        // Add Plugins
+        if( $this->plugin_data ) {
+            $data['plugins'] = $plugins_data;
+        }
 
         // Add metadata
         if ( $extra = $this->get_extra_data() ) {
