@@ -505,8 +505,20 @@ class Insights {
      */
     public function get_post_count( $post_type ) {
         global $wpdb;
+	$post_count = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                "
+                    SELECT count(ID)
+                    FROM $wpdb->posts
+                    WHERE post_type = %s
+                    and post_status = 'publish'
+                ",
+                $post_type
+            )
+        );
+        return $post_count;
 
-        return (int) $wpdb->get_var( "SELECT count(ID) FROM $wpdb->posts WHERE post_type = '$post_type' and post_status = 'publish'");
+        //return (int) $wpdb->get_var( "SELECT count(ID) FROM $wpdb->posts WHERE post_type = '$post_type' and post_status = 'publish'");
     }
 
     /**
@@ -766,6 +778,13 @@ class Insights {
      * @return void
      */
     public function uninstall_reason_submission() {
+	    
+	if ( ! wp_verify_nonce( $_REQUEST['nonce'], 'appsero-security-nonce' ) ) // security_nonce
+        {
+            wp_send_json_error("No dirty business please", 400);
+            return false;
+            die ();
+        }
 
         if ( ! isset( $_POST['reason_id'] ) ) {
             wp_send_json_error();
@@ -913,6 +932,7 @@ class Insights {
                             url: ajaxurl,
                             type: 'POST',
                             data: {
+				nonce: '<?php echo wp_create_nonce('appsero-security-nonce'); ?>',
                                 action: '<?php echo $this->client->slug; ?>_submit-uninstall-reason',
                                 reason_id: ( 0 === $radio.length ) ? 'none' : $radio.val(),
                                 reason_info: ( 0 !== $input.length ) ? $input.val().trim() : ''
