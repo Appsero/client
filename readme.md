@@ -171,6 +171,15 @@ $client->insights()
 ```
 ---
 
+#### 6. Set Notice Message
+Change opt-in message text
+```php
+$client->insights()
+       ->notice("Your custom notice text")
+       ->init();
+```
+---
+
 ### Check License Validity
 
 Check your plugin/theme is using with valid license or not, First create a global variable of `License` object then use it anywhere in your code.
