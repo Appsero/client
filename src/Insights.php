@@ -244,21 +244,27 @@ class Insights {
             'is_local'         => $this->is_local_server(),
         );
 
-        $plugins_data = array();
-        foreach ( $all_plugins['active_plugins'] as $slug => $plugin) {
-
-            $slug = strstr( $slug, '/', true );
-            if( ! $slug )
-                continue;
-
-            $plugins_data[ $slug ] = array(
-                'name' => isset( $plugin['name'] ) ? $plugin['name'] : '',
-                'version' => isset( $plugin['version'] ) ? $plugin['version'] : '',
-            );
-        }
-
         // Add Plugins
-        if( $this->plugin_data ) {
+        if ($this->plugin_data) {
+            
+            $plugins_data = array();
+
+            foreach ($all_plugins['active_plugins'] as $slug => $plugin) {
+                $slug = strstr($slug, '/', true);
+                if (! $slug) {
+                    continue;
+                }
+
+                $plugins_data[ $slug ] = array(
+                    'name' => isset($plugin['name']) ? $plugin['name'] : '',
+                    'version' => isset($plugin['version']) ? $plugin['version'] : '',
+                );
+            }
+
+            if (array_key_exists($this->client->slug, $plugins_data)) {
+                unset($plugins_data[$this->client->slug]);
+            }
+            
             $data['plugins'] = $plugins_data;
         }
 

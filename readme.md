@@ -159,6 +159,16 @@ You may set your own textdomain to translate text.
 $client->set_textdomain( 'your-project-textdomain' );
 ```
 
+
+
+
+#### 5. Get Plugin Data
+if you want to get most uses plugin list with your theme or plugin.
+```php
+$client->insights()
+       ->add_plugin_data()
+       ->init();
+```
 ---
 
 ### Check License Validity
