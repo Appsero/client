@@ -163,7 +163,7 @@ $client->set_textdomain( 'your-project-textdomain' );
 
 
 #### 5. Get Plugin Data
-if you want to get most uses plugin list with your theme or plugin.
+If you want to get the most used plugins with your plugin or theme, send the active plugins' data to Appsero.
 ```php
 $client->insights()
        ->add_plugin_data()
