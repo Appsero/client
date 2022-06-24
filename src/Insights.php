@@ -105,7 +105,7 @@ class Insights {
      * @return \self
      */
     public function notice(string $text='' ) {
-        $this->notice = sanitize_text_field($text);
+        $this->notice = $text;
 
         return $this;
     }
