@@ -104,7 +104,7 @@ class Insights {
      *
      * @return \self
      */
-    public function notice(string $text='' ) {
+    public function notice($text='' ) {
         $this->notice = $text;
 
         return $this;
