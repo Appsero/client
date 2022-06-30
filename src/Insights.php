@@ -366,8 +366,8 @@ class Insights {
      */
     private function is_local_server() {
 
-        $host       = $_SERVER['HTTP_HOST'];
-        $ip         = $_SERVER['SERVER_ADDR'];
+        $host       = isset( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : 'localhost';
+        $ip         = isset( $_SERVER['SERVER_ADDR'] ) ? $_SERVER['SERVER_ADDR'] : '127.0.0.1';
         $is_local   = false;
 
         if( in_array( $ip,array( '127.0.0.1', '::1' ) )
