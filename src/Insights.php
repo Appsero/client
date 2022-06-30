@@ -781,6 +781,10 @@ class Insights {
             wp_send_json_error();
         }
 
+        if ( ! wp_verify_nonce( $_POST['nonce'], 'appsero-security-nonce' ) ) {
+            wp_send_json_error( 'Nonce verification failed' );
+        }
+
         $data                = $this->get_tracking_data();
         $data['reason_id']   = sanitize_text_field( $_POST['reason_id'] );
         $data['reason_info'] = isset( $_REQUEST['reason_info'] ) ? trim( stripslashes( $_REQUEST['reason_info'] ) ) : '';
@@ -923,6 +927,7 @@ class Insights {
                             url: ajaxurl,
                             type: 'POST',
                             data: {
+                                nonce: '<?php echo wp_create_nonce( 'appsero-security-nonce' ); ?>',
                                 action: '<?php echo $this->client->slug; ?>_submit-uninstall-reason',
                                 reason_id: ( 0 === $radio.length ) ? 'none' : $radio.val(),
                                 reason_info: ( 0 !== $input.length ) ? $input.val().trim() : ''
