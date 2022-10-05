@@ -52,11 +52,11 @@ class License {
     protected $schedule_hook;
 
     /**
-     * Set value for valid licnese
+     * Set value for valid license
      *
      * @var bool
      */
-    private $is_valid_licnese = null;
+    private $is_valid_license = null;
 
     /**
      * Initialize the class
@@ -363,19 +363,19 @@ class License {
      * Check this is a valid license
      */
     public function is_valid() {
-        if ( null !== $this->is_valid_licnese ) {
-            return $this->is_valid_licnese;
+        if ( null !== $this->is_valid_license ) {
+            return $this->is_valid_license;
         }
 
         $license = $this->get_license();
 
         if ( ! empty( $license['key'] ) && isset( $license['status'] ) && $license['status'] == 'activate' ) {
-            $this->is_valid_licnese = true;
+            $this->is_valid_license = true;
         } else {
-            $this->is_valid_licnese = false;
+            $this->is_valid_license = false;
         }
 
-        return $this->is_valid_licnese;
+        return $this->is_valid_license;
     }
 
     /**
