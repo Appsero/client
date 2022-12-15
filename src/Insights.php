@@ -785,6 +785,10 @@ class Insights {
             wp_send_json_error( 'Nonce verification failed' );
         }
 
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( 'You are not allowed for this task' );
+        }
+
         $data                = $this->get_tracking_data();
         $data['reason_id']   = sanitize_text_field( $_POST['reason_id'] );
         $data['reason_info'] = isset( $_REQUEST['reason_info'] ) ? trim( stripslashes( $_REQUEST['reason_info'] ) ) : '';
