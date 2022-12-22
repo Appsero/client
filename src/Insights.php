@@ -491,7 +491,10 @@ class Insights {
         $this->schedule_event();
         $this->send_tracking_data();
 
-        
+        /**
+         * Fires when the user has opted in tracking.
+         */
+        do_action( $this->client->slug . '_tracker_optin', $this->get_tracking_data() );
     }
 
     /**
@@ -506,6 +509,11 @@ class Insights {
         $this->send_tracking_skipped_request();
 
         $this->clear_schedule_event();
+
+        /**
+         * Fires when the user has opted out tracking.
+         */
+        do_action( $this->client->slug . '_tracker_optout' );
     }
 
     /**
