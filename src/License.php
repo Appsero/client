@@ -3,6 +3,13 @@
 namespace Appsero;
 
 /**
+ * Return if class exists
+ */
+if ( class_exists( '\Appsero\License' ) ) {
+    return;
+}
+
+/**
  * Appsero License Checker
  *
  * This class will check, active and deactive license

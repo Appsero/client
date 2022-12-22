@@ -1,6 +1,15 @@
 <?php
 namespace Appsero;
 
+
+/**
+ * Return if class exists
+ */
+if ( class_exists( '\Appsero\Updater' ) ) {
+    return;
+}
+
+
 /**
  * Appsero Updater
  *

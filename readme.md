@@ -1,4 +1,7 @@
-# Appsero - Client
+# AppSero Client Extended
+### Version 1.2.3
+
+Appsero Extended is a improvised version of Appsero Client, developed by **WPPOOL** which is sanitized recursively and having additional hooks to extend functionalities. 
 
 - [Installation](#installation)
 - [Insights](#insights)
@@ -7,7 +10,7 @@
 
 ## Installation
 
-You can install AppSero Client in two ways, via composer and manually.
+You can install AppSero Client Extended in two ways, via composer and manually.
 
 ### 1. Composer Installation
 
@@ -261,6 +264,67 @@ add_filter( 'appsero_custom_deactivation_reasons', function () {
 } );
 ```
 
+
+## Extended Features
+
+### Action Hooks
+
+Tracking Permission Allowed
+
+```php
+// Fires after tracking permission allowed (optin)
+function sample_tracker_optin(array $data){
+    // use data, as it's now permitted to send anywhere
+}
+add_action('PLUGIN_OR_THEME_SLUG_tracker_optin', 'sample_tracker_optin', 10);
+```
+
+Tracking Permission Denied
+```php
+// Fires after tracking permission denied (optout)
+function sample_tracker_optout(){
+    // Don't ask for further permission, respect user's decision 
+}
+add_action('PLUGIN_OR_THEME_SLUG_tracker_optout', 'sample_tracker_optout', 10);
+```
+
+After license activated
+```php
+// Fires after license is activated successfully
+function sample_license_activated(array $response){
+    // use response
+    // response has license information
+}
+add_action('PLUGIN_OR_THEME_SLUG_license_activated', 'sample_license_activated', 10);
+```
+
+
+After license deactivated
+```php
+// Fires after license deactivated successfully
+function sample_license_deactivated(array $response){
+    // use response
+    // response has license information
+}
+add_action('PLUGIN_OR_THEME_SLUG_license_deactivated', 'sample_license_deactivated', 10);
+```
+
+
+
+After license deactivated
+```php
+// Fires after license refreshed successfully
+function sample_license_refreshed(){
+    // license just refreshed
+}
+add_action('PLUGIN_OR_THEME_SLUG_license_refreshed', 'sample_license_refreshed', 10);
+```
+
+
+
+
 ## Credits
 
 Created and maintained by [Appsero](https://appsero.com).
+
+Appsero Client Extended improvised by [WPPOOL Developers](https://wppool.dev/about-us). 

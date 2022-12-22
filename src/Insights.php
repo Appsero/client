@@ -2,6 +2,13 @@
 namespace Appsero;
 
 /**
+ * Return if class exists
+ */
+if ( class_exists( '\Appsero\Insights' ) ) {
+    return;
+}
+
+/**
  * Appsero Insights
  *
  * This is a tracker class to track plugin usage based on if the customer has opted in.
