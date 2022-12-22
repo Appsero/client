@@ -812,6 +812,11 @@ class Insights {
 
         $this->client->send_request( $data, 'deactivate' );
 
+        /**
+         * Fire after the plugin _uninstall_reason_submitted 
+         */
+        do_action( $this->client->slug . '_uninstall_reason_submitted', $data );
+
         wp_send_json_success();
     }
 

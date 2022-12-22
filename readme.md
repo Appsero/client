@@ -264,8 +264,10 @@ add_filter( 'appsero_custom_deactivation_reasons', function () {
 } );
 ```
 
+<br>
+<br>
 
-## Extended Features
+# Extended Features
 
 ### Action Hooks
 
@@ -275,6 +277,7 @@ Tracking Permission Allowed
 // Fires after tracking permission allowed (optin)
 function sample_tracker_optin(array $data){
     // use data, as it's now permitted to send anywhere
+    // Like FLuentCRM
 }
 add_action('PLUGIN_OR_THEME_SLUG_tracker_optin', 'sample_tracker_optin', 10);
 ```
@@ -294,6 +297,7 @@ After license activated
 function sample_license_activated(array $response){
     // use response
     // response has license information
+    // Like FLuentCRM
 }
 add_action('PLUGIN_OR_THEME_SLUG_license_activated', 'sample_license_activated', 10);
 ```
@@ -311,13 +315,23 @@ add_action('PLUGIN_OR_THEME_SLUG_license_deactivated', 'sample_license_deactivat
 
 
 
-After license deactivated
+After license refreshed
 ```php
 // Fires after license refreshed successfully
 function sample_license_refreshed(){
     // license just refreshed
 }
 add_action('PLUGIN_OR_THEME_SLUG_license_refreshed', 'sample_license_refreshed', 10);
+```
+
+Uninstall reason submitted
+```php
+// Fires after uninstall reason submitted
+function sample_uninstall_reason_submitted(array $data){
+    // use the data
+    // Like FLuentCRM
+}
+add_action('PLUGIN_OR_THEME_SLUG_uninstall_reason_submitted', 'sample_uninstall_reason_submitted', 10);
 ```
 
 
