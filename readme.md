@@ -1,8 +1,6 @@
 # AppSero Client Extended
 ### Version 1.2.3
 
-Appsero Extended is a improvised version of Appsero Client, developed by **WPPOOL** which is sanitized recursively and having additional hooks to extend functionalities. 
-
 - [Installation](#installation)
 - [Insights](#insights)
 - [Dynamic Usage](#dynamic-usage)
@@ -12,27 +10,27 @@ Appsero Extended is a improvised version of Appsero Client, developed by **WPPOO
 
 You can install AppSero Client Extended in two ways, via composer and manually.
 
-### 1. Composer Installation
+<!-- ### 1. Composer Installation
 
 Add dependency in your project (theme/plugin):
 
 ```
-composer require appsero/client
+composer require appsero/client-extended
 ```
 
 Now add `autoload.php` in your file if you haven't done already.
 
 ```php
 require __DIR__ . '/vendor/autoload.php';
-```
+``` -->
 
 ### 2. Manual Installation
 
 Clone the repository in your project.
 
-```
+```bash
 cd /path/to/your/project/folder
-git clone https://github.com/AppSero/client.git appsero
+git clone https://github.com/WPPOOL/appsero-client-extended.git appsero
 ```
 
 Now include the dependencies in your plugin/theme.
@@ -269,7 +267,7 @@ add_filter( 'appsero_custom_deactivation_reasons', function () {
 
 # Extended Features
 
-### Action Hooks
+### Inherited Action Hooks
 
 Tracking Permission Allowed
 
