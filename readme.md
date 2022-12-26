@@ -30,7 +30,7 @@ Clone the repository in your project.
 
 ```bash
 cd /path/to/your/project/folder
-git clone https://github.com/WPPOOL/appsero-client-extended.git appsero
+git clone https://github.com/WPPOOL/appsero-extended.git appsero
 ```
 
 Now include the dependencies in your plugin/theme.
