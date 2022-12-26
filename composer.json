@@ -1,6 +1,6 @@
 {
-    "name": "appsero/client-extended",
-    "description": "Appsero Client Extended",
+    "name": "appsero/client",
+    "description": "Appsero Client",
     "keywords": ["analytics", "wordpress", "plugin", "theme"],
     "type": "library",
     "license": "MIT",
@@ -8,11 +8,7 @@
         {
             "name": "Tareq Hasan",
             "email": "tareq@appsero.com"
-        },
-        {
-            "name": "Jafran Hasan",
-            "email": "jafraaan@gmail.com"
-        }
+        }, 
     ],
     "autoload": {
         "psr-4": {

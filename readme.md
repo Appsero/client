@@ -1,4 +1,4 @@
-# AppSero Client Extended
+# AppSero Client
 ### Version 1.2.3
 
 - [Installation](#installation)
@@ -8,21 +8,21 @@
 
 ## Installation
 
-You can install AppSero Client Extended in two ways, via composer and manually.
+You can install AppSero Client in two ways, via composer and manually.
 
-<!-- ### 1. Composer Installation
+### 1. Composer Installation
 
 Add dependency in your project (theme/plugin):
 
 ```
-composer require appsero/client-extended
+composer require appsero/client
 ```
 
 Now add `autoload.php` in your file if you haven't done already.
 
 ```php
 require __DIR__ . '/vendor/autoload.php';
-``` -->
+```
 
 ### 2. Manual Installation
 
@@ -30,13 +30,15 @@ Clone the repository in your project.
 
 ```bash
 cd /path/to/your/project/folder
-git clone https://github.com/WPPOOL/appsero-extended.git appsero
+git clone https://github.com/appsero/client.git appsero
 ```
 
 Now include the dependencies in your plugin/theme.
 
 ```php
-require __DIR__ . '/appsero/src/Client.php';
+if( !class_exists('Appsero\Client') ) {
+    require __DIR__ . '/appsero/src/Client.php';
+}
 ```
 
 ## Insights
@@ -265,11 +267,9 @@ add_filter( 'appsero_custom_deactivation_reasons', function () {
 <br>
 <br>
 
-# Extended Features
-
-### Inherited Action Hooks
-
-Tracking Permission Allowed
+# Extended Actions
+ 
+#### 1. After allowing tracking permission
 
 ```php
 // Fires after tracking permission allowed (optin)
@@ -280,7 +280,7 @@ function sample_tracker_optin(array $data){
 add_action('PLUGIN_OR_THEME_SLUG_tracker_optin', 'sample_tracker_optin', 10);
 ```
 
-Tracking Permission Denied
+#### 2. After dening tracking permission
 ```php
 // Fires after tracking permission denied (optout)
 function sample_tracker_optout(){
@@ -289,7 +289,7 @@ function sample_tracker_optout(){
 add_action('PLUGIN_OR_THEME_SLUG_tracker_optout', 'sample_tracker_optout', 10);
 ```
 
-After license activated
+#### 3. After license is activated
 ```php
 // Fires after license is activated successfully
 function sample_license_activated(array $response){
@@ -301,7 +301,7 @@ add_action('PLUGIN_OR_THEME_SLUG_license_activated', 'sample_license_activated',
 ```
 
 
-After license deactivated
+#### 4. After license is deactivated
 ```php
 // Fires after license deactivated successfully
 function sample_license_deactivated(array $response){
@@ -313,7 +313,7 @@ add_action('PLUGIN_OR_THEME_SLUG_license_deactivated', 'sample_license_deactivat
 
 
 
-After license refreshed
+#### 5. After license is refreshed
 ```php
 // Fires after license refreshed successfully
 function sample_license_refreshed(){
@@ -322,7 +322,7 @@ function sample_license_refreshed(){
 add_action('PLUGIN_OR_THEME_SLUG_license_refreshed', 'sample_license_refreshed', 10);
 ```
 
-Uninstall reason submitted
+#### 6. After uninstall reason is submitted
 ```php
 // Fires after uninstall reason submitted
 function sample_uninstall_reason_submitted(array $data){
@@ -331,12 +331,7 @@ function sample_uninstall_reason_submitted(array $data){
 }
 add_action('PLUGIN_OR_THEME_SLUG_uninstall_reason_submitted', 'sample_uninstall_reason_submitted', 10);
 ```
-
-
-
-
+ 
 ## Credits
 
 Created and maintained by [Appsero](https://appsero.com).
-
-Appsero Client Extended improvised by [WPPOOL Developers](https://wppool.dev/about-us). 
