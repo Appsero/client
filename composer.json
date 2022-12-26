@@ -8,7 +8,7 @@
         {
             "name": "Tareq Hasan",
             "email": "tareq@appsero.com"
-        }, 
+        }
     ],
     "autoload": {
         "psr-4": {

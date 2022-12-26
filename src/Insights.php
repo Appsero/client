@@ -1,13 +1,6 @@
 <?php
 namespace Appsero;
-
-/**
- * Return if class exists
- */
-if ( class_exists( '\Appsero\Insights' ) ) {
-    return;
-}
-
+ 
 /**
  * Appsero Insights
  *
