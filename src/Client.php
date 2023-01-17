@@ -68,7 +68,7 @@ class Client {
     public $type;
 
     /**
-     * textdomain
+     * Textdomain
      *
      * @var string
      */
@@ -116,8 +116,7 @@ class Client {
      * @return Appsero\Insights
      */
     public function insights() {
-
-        if ( ! class_exists( __NAMESPACE__ . '\Insights') ) {
+        if ( ! class_exists( __NAMESPACE__ . '\Insights' ) ) {
             require_once __DIR__ . '/Insights.php';
         }
 
@@ -137,8 +136,7 @@ class Client {
      * @return Appsero\Updater
      */
     public function updater() {
-
-        if ( ! class_exists( __NAMESPACE__ . '\Updater') ) {
+        if ( ! class_exists( __NAMESPACE__ . '\Updater' ) ) {
             require_once __DIR__ . '/Updater.php';
         }
 
@@ -158,8 +156,7 @@ class Client {
      * @return Appsero\License
      */
     public function license() {
-
-        if ( ! class_exists( __NAMESPACE__ . '\License') ) {
+        if ( ! class_exists( __NAMESPACE__ . '\License' ) ) {
             require_once __DIR__ . '/License.php';
         }
 
@@ -190,7 +187,6 @@ class Client {
      * @return void
      */
     protected function set_basename_and_slug() {
-
         if ( strpos( $this->file, WP_CONTENT_DIR . '/themes/' ) === false ) {
             $this->basename = plugin_basename( $this->file );
 
@@ -232,16 +228,18 @@ class Client {
             'Accept'     => 'application/json',
         );
 
-        $response = wp_remote_post( $url, array(
-            'method'      => 'POST',
-            'timeout'     => 30,
-            'redirection' => 5,
-            'httpversion' => '1.0',
-            'blocking'    => $blocking,
-            'headers'     => $headers,
-            'body'        => array_merge( $params, array( 'client' => $this->version ) ),
-            'cookies'     => array()
-        ) );
+        $response = wp_remote_post(
+            $url, array(
+				'method'      => 'POST',
+				'timeout'     => 30,
+				'redirection' => 5,
+				'httpversion' => '1.0',
+				'blocking'    => $blocking,
+				'headers'     => $headers,
+				'body'        => array_merge( $params, array( 'client' => $this->version ) ),
+				'cookies'     => array(),
+            )
+        );
 
         return $response;
     }
@@ -252,7 +250,7 @@ class Client {
      * @return boolean
      */
     public function is_local_server() {
-        $is_local = in_array( $_SERVER['REMOTE_ADDR'], array( '127.0.0.1', '::1' ) );
+        $is_local = isset( $_SERVER['REMOTE_ADDR'] ) && in_array( $_SERVER['REMOTE_ADDR'], array( '127.0.0.1', '::1' ), true );
 
         return apply_filters( 'appsero_is_local', $is_local );
     }

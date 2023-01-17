@@ -1,6 +1,6 @@
 <?php
 namespace Appsero;
- 
+
 /**
  * Appsero Insights
  *
@@ -52,7 +52,6 @@ class Insights {
      * @param null $file
      */
     public function __construct( $client, $name = null, $file = null ) {
-
         if ( is_string( $client ) && ! empty( $name ) && ! empty( $file ) ) {
             $client = new Client( $client, $name, $file );
         }
@@ -104,7 +103,7 @@ class Insights {
      *
      * @return \self
      */
-    public function notice($text='' ) {
+    public function notice( $text = '' ) {
         $this->notice = $text;
 
         return $this;
@@ -116,9 +115,9 @@ class Insights {
      * @return void
      */
     public function init() {
-        if ( $this->client->type == 'plugin' ) {
+        if ( $this->client->type === 'plugin' ) {
             $this->init_plugin();
-        } else if ( $this->client->type == 'theme' ) {
+        } elseif ( $this->client->type === 'theme' ) {
             $this->init_theme();
         }
     }
@@ -159,7 +158,6 @@ class Insights {
      * @return void
      */
     protected function init_common() {
-
         if ( $this->show_notice ) {
             // tracking notice
             add_action( 'admin_notices', array( $this, 'admin_notice' ) );
@@ -210,16 +208,19 @@ class Insights {
     protected function get_tracking_data() {
         $all_plugins = $this->get_all_plugins();
 
-        $users = get_users( array(
-            'role'    => 'administrator',
-            'orderby' => 'ID',
-            'order'   => 'ASC',
-            'number'  => 1,
-            'paged'   => 1,
-        ) );
+        $users = get_users(
+            array(
+				'role'    => 'administrator',
+				'orderby' => 'ID',
+				'order'   => 'ASC',
+				'number'  => 1,
+				'paged'   => 1,
+            )
+        );
 
-        $admin_user =  ( is_array( $users ) && ! empty( $users ) ) ? $users[0] : false;
-        $first_name = $last_name = '';
+        $admin_user = ( is_array( $users ) && ! empty( $users ) ) ? $users[0] : false;
+        $first_name = '';
+        $last_name = '';
 
         if ( $admin_user ) {
             $first_name = $admin_user->first_name ? $admin_user->first_name : $admin_user->display_name;
@@ -245,31 +246,32 @@ class Insights {
         );
 
         // Add Plugins
-        if ($this->plugin_data) {
-            
+        if ( $this->plugin_data ) {
             $plugins_data = array();
 
-            foreach ($all_plugins['active_plugins'] as $slug => $plugin) {
-                $slug = strstr($slug, '/', true);
-                if (! $slug) {
+            foreach ( $all_plugins['active_plugins'] as $slug => $plugin ) {
+                $slug = strstr( $slug, '/', true );
+                if ( ! $slug ) {
                     continue;
                 }
 
                 $plugins_data[ $slug ] = array(
-                    'name' => isset($plugin['name']) ? $plugin['name'] : '',
-                    'version' => isset($plugin['version']) ? $plugin['version'] : '',
+                    'name' => isset( $plugin['name'] ) ? $plugin['name'] : '',
+                    'version' => isset( $plugin['version'] ) ? $plugin['version'] : '',
                 );
             }
 
-            if (array_key_exists($this->client->slug, $plugins_data)) {
-                unset($plugins_data[$this->client->slug]);
+            if ( array_key_exists( $this->client->slug, $plugins_data ) ) {
+                unset( $plugins_data[ $this->client->slug ] );
             }
-            
+
             $data['plugins'] = $plugins_data;
         }
 
-        // Add metadata
-        if ( $extra = $this->get_extra_data() ) {
+        // Add Metadata
+        $extra = $this->get_extra_data();
+
+        if ( $extra ) {
             $data['extra'] = $extra;
         }
 
@@ -317,8 +319,8 @@ class Insights {
             'Your name and email address',
         );
 
-        if ($this->plugin_data) { 
-            array_splice($data, 4, 0, ["active plugins' name"]);
+        if ( $this->plugin_data ) {
+            array_splice( $data, 4, 0, [ "active plugins' name" ] );
         }
 
         return $data;
@@ -332,7 +334,7 @@ class Insights {
     public function tracking_allowed() {
         $allow_tracking = get_option( $this->client->slug . '_allow_tracking', 'no' );
 
-        return $allow_tracking == 'yes';
+        return $allow_tracking === 'yes';
     }
 
     /**
@@ -352,7 +354,7 @@ class Insights {
     public function notice_dismissed() {
         $hide_notice = get_option( $this->client->slug . '_tracking_notice', null );
 
-        if ( 'hide' == $hide_notice ) {
+        if ( 'hide' === $hide_notice ) {
             return true;
         }
 
@@ -365,14 +367,13 @@ class Insights {
      * @return boolean
      */
     private function is_local_server() {
-
-        $host       = isset( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : 'localhost';
-        $ip         = isset( $_SERVER['SERVER_ADDR'] ) ? $_SERVER['SERVER_ADDR'] : '127.0.0.1';
+        $host       = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_key( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : 'localhost';
+        $ip         = isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_key( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : '127.0.0.1';
         $is_local   = false;
 
-        if( in_array( $ip,array( '127.0.0.1', '::1' ) )
+        if ( in_array( $ip, array( '127.0.0.1', '::1' ), true )
             || ! strpos( $host, '.' )
-            || in_array( strrchr( $host, '.' ), array( '.test', '.testing', '.local', '.localhost', '.localdomain' ) )
+            || in_array( strrchr( $host, '.' ), array( '.test', '.testing', '.local', '.localhost', '.localdomain' ), true )
         ) {
             $is_local = true;
         }
@@ -386,7 +387,7 @@ class Insights {
      * @return void
      */
     private function schedule_event() {
-        $hook_name = $this->client->slug . '_tracker_send_event';
+        $hook_name = wp_unslash( $this->client->slug . '_tracker_send_event' );
 
         if ( ! wp_next_scheduled( $hook_name ) ) {
             wp_schedule_event( time(), 'weekly', $hook_name );
@@ -408,7 +409,6 @@ class Insights {
      * @return void
      */
     public function admin_notice() {
-
         if ( $this->notice_dismissed() ) {
             return;
         }
@@ -426,8 +426,8 @@ class Insights {
             return;
         }
 
-        $optin_url  = add_query_arg( $this->client->slug . '_tracker_optin', 'true' );
-        $optout_url = add_query_arg( $this->client->slug . '_tracker_optout', 'true' );
+        $optin_url  = add_query_arg( wp_nonce_url( $this->client->slug . '_tracker_optin', '_wpnonce' ), 'true' );
+        $optout_url = add_query_arg( wp_nonce_url( $this->client->slug . '_tracker_optout', '_wpnonce' ), 'true' );
 
         if ( empty( $this->notice ) ) {
             $notice = sprintf( $this->client->__trans( 'Want to help make <strong>%1$s</strong> even more awesome? Allow %1$s to collect non-sensitive diagnostic data and usage information.' ), $this->client->name );
@@ -435,7 +435,7 @@ class Insights {
             $notice = $this->notice;
         }
 
-        $policy_url = 'https://' . 'appsero.com/privacy-policy/';
+        $policy_url = 'https://appsero.com/privacy-policy/';
 
         $notice .= ' (<a class="' . $this->client->slug . '-insights-data-we-collect" href="#">' . $this->client->__trans( 'what we collect' ) . '</a>)';
         $notice .= '<p class="description" style="display:none;">' . implode( ', ', $this->data_we_collect() ) . '. No sensitive data is tracked. ';
@@ -457,23 +457,30 @@ class Insights {
     }
 
     /**
-     * handle the optin/optout
+     * Handle the optin/optout
      *
      * @return void
      */
     public function handle_optin_optout() {
+        if ( ! isset( $_POST['_wpnonce'] ) ) {
+            return;
+        }
 
-        if ( isset( $_GET[ $this->client->slug . '_tracker_optin' ] ) && $_GET[ $this->client->slug . '_tracker_optin' ] == 'true' ) {
+        if ( ! wp_verify_nonce( sanitize_key( $_POST['_wpnonce'] ) ) ) {
+            return;
+        }
+
+        if ( isset( $_GET['dokan_option'] ) && isset( $_GET[ $this->client->slug . '_tracker_optin' ] ) && $_GET[ $this->client->slug . '_tracker_optin' ] === 'true' ) {
             $this->optin();
 
-            wp_redirect( remove_query_arg( $this->client->slug . '_tracker_optin' ) );
+            wp_safe_redirect( remove_query_arg( $this->client->slug . '_tracker_optin' ) );
             exit;
         }
 
-        if ( isset( $_GET[ $this->client->slug . '_tracker_optout' ] ) && $_GET[ $this->client->slug . '_tracker_optout' ] == 'true' ) {
+        if ( isset( $_GET[ $this->client->slug . '_tracker_optout' ] ) && isset( $_GET[ $this->client->slug . '_tracker_optout' ] ) && $_GET[ $this->client->slug . '_tracker_optout' ] === 'true' ) {
             $this->optout();
 
-            wp_redirect( remove_query_arg( $this->client->slug . '_tracker_optout' ) );
+            wp_safe_redirect( remove_query_arg( $this->client->slug . '_tracker_optout' ) );
             exit;
         }
     }
@@ -526,7 +533,12 @@ class Insights {
     public function get_post_count( $post_type ) {
         global $wpdb;
 
-        return (int) $wpdb->get_var( "SELECT count(ID) FROM $wpdb->posts WHERE post_type = '$post_type' and post_status = 'publish'");
+        return (int) $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT count(ID) FROM $wpdb->posts WHERE post_type = %s and post_status = %s",
+                [ $post_type, 'publish' ]
+            )
+        );
     }
 
     /**
@@ -540,14 +552,14 @@ class Insights {
         $server_data = array();
 
         if ( isset( $_SERVER['SERVER_SOFTWARE'] ) && ! empty( $_SERVER['SERVER_SOFTWARE'] ) ) {
-            $server_data['software'] = $_SERVER['SERVER_SOFTWARE'];
+            $server_data['software'] = sanitize_key( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) );
         }
 
         if ( function_exists( 'phpversion' ) ) {
             $server_data['php_version'] = phpversion();
         }
 
-        $server_data['mysql_version']        = $wpdb->db_version();
+        $server_data['mysql_version'] = $wpdb->db_version();
 
         $server_data['php_max_upload_size']  = size_format( wp_max_upload_size() );
         $server_data['php_default_timezone'] = date_default_timezone_get();
@@ -567,7 +579,7 @@ class Insights {
         $wp_data = array();
 
         $wp_data['memory_limit'] = WP_MEMORY_LIMIT;
-        $wp_data['debug_mode']   = ( defined('WP_DEBUG') && WP_DEBUG ) ? 'Yes' : 'No';
+        $wp_data['debug_mode']   = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? 'Yes' : 'No';
         $wp_data['locale']       = get_locale();
         $wp_data['version']      = get_bloginfo( 'version' );
         $wp_data['multisite']    = is_multisite() ? 'Yes' : 'No';
@@ -601,34 +613,37 @@ class Insights {
         foreach ( $plugins as $k => $v ) {
             // Take care of formatting the data how we want it.
             $formatted = array();
-            $formatted['name'] = strip_tags( $v['Name'] );
+            $formatted['name'] = wp_strip_all_tags( $v['Name'] );
 
             if ( isset( $v['Version'] ) ) {
-                $formatted['version'] = strip_tags( $v['Version'] );
+                $formatted['version'] = wp_strip_all_tags( $v['Version'] );
             }
 
             if ( isset( $v['Author'] ) ) {
-                $formatted['author'] = strip_tags( $v['Author'] );
+                $formatted['author'] = wp_strip_all_tags( $v['Author'] );
             }
 
             if ( isset( $v['Network'] ) ) {
-                $formatted['network'] = strip_tags( $v['Network'] );
+                $formatted['network'] = wp_strip_all_tags( $v['Network'] );
             }
 
             if ( isset( $v['PluginURI'] ) ) {
-                $formatted['plugin_uri'] = strip_tags( $v['PluginURI'] );
+                $formatted['plugin_uri'] = wp_strip_all_tags( $v['PluginURI'] );
             }
 
-            if ( in_array( $k, $active_plugins_keys ) ) {
+            if ( in_array( $k, $active_plugins_keys, true ) ) {
                 // Remove active plugins from list so we can show active and inactive separately
-                unset( $plugins[$k] );
-                $active_plugins[$k] = $formatted;
+                unset( $plugins[ $k ] );
+                $active_plugins[ $k ] = $formatted;
             } else {
-                $plugins[$k] = $formatted;
+                $plugins[ $k ] = $formatted;
             }
         }
 
-        return array( 'active_plugins' => $active_plugins, 'inactive_plugins' => $plugins );
+        return array(
+			'active_plugins' => $active_plugins,
+			'inactive_plugins' => $plugins,
+		);
     }
 
     /**
@@ -661,7 +676,6 @@ class Insights {
      * @return array
      */
     public function add_weekly_schedule( $schedules ) {
-
         $schedules['weekly'] = array(
             'interval' => DAY_IN_SECONDS * 7,
             'display'  => 'Once Weekly',
@@ -702,7 +716,7 @@ class Insights {
     public function deactivation_cleanup() {
         $this->clear_schedule_event();
 
-        if ( 'theme' == $this->client->type ) {
+        if ( 'theme' === $this->client->type ) {
             delete_option( $this->client->slug . '_tracking_last_send' );
             delete_option( $this->client->slug . '_allow_tracking' );
         }
@@ -718,7 +732,6 @@ class Insights {
      * @return array
      */
     public function plugin_action_links( $links ) {
-
         if ( array_key_exists( 'deactivate', $links ) ) {
             $links['deactivate'] = str_replace( '<a', '<a class="' . $this->client->slug . '-deactivate-link"', $links['deactivate'] );
         }
@@ -737,7 +750,7 @@ class Insights {
 				'id'          => 'could-not-understand',
 				'text'        => $this->client->__trans( "Couldn't understand" ),
 				'placeholder' => $this->client->__trans( 'Would you like us to assist you?' ),
-                'icon'        => '<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 23 23"><g fill="none"><g fill="#3B86FF"><path d="M11.5 0C17.9 0 23 5.1 23 11.5 23 17.9 17.9 23 11.5 23 10.6 23 9.6 22.9 8.8 22.7L8.8 22.6C9.3 22.5 9.7 22.3 10 21.9 10.3 21.6 10.4 21.3 10.4 20.9 10.8 21 11.1 21 11.5 21 16.7 21 21 16.7 21 11.5 21 6.3 16.7 2 11.5 2 6.3 2 2 6.3 2 11.5 2 13 2.3 14.3 2.9 15.6 2.7 16 2.4 16.3 2.2 16.8L2.1 17.1 2.1 17.3C2 17.5 2 17.7 2 18 0.7 16.1 0 13.9 0 11.5 0 5.1 5.1 0 11.5 0ZM6 13.6C6 13.7 6.1 13.8 6.1 13.9 6.3 14.5 6.2 15.7 6.1 16.4 6.1 16.6 6 16.9 6 17.1 6 17.1 6.1 17.1 6.1 17.1 7.1 16.9 8.2 16 9.3 15.5 9.8 15.2 10.4 15 10.9 15 11.2 15 11.4 15 11.6 15.2 11.9 15.4 12.1 16 11.6 16.4 11.5 16.5 11.3 16.6 11.1 16.7 10.5 17 9.9 17.4 9.3 17.7 9 17.9 9 18.1 9.1 18.5 9.2 18.9 9.3 19.4 9.3 19.8 9.4 20.3 9.3 20.8 9 21.2 8.8 21.5 8.5 21.6 8.1 21.7 7.9 21.8 7.6 21.9 7.3 21.9L6.5 22C6.3 22 6 21.9 5.8 21.9 5 21.8 4.4 21.5 3.9 20.9 3.3 20.4 3.1 19.6 3 18.8L3 18.5C3 18.2 3 17.9 3.1 17.7L3.1 17.6C3.2 17.1 3.5 16.7 3.7 16.3 4 15.9 4.2 15.4 4.3 15 4.4 14.6 4.4 14.5 4.6 14.2 4.6 13.9 4.7 13.7 4.9 13.6 5.2 13.2 5.7 13.2 6 13.6ZM11.7 11.2C13.1 11.2 14.3 11.7 15.2 12.9 15.3 13 15.4 13.1 15.4 13.2 15.4 13.4 15.3 13.8 15.2 13.8 15 13.9 14.9 13.8 14.8 13.7 14.6 13.5 14.4 13.2 14.1 13.1 13.5 12.6 12.8 12.3 12 12.2 10.7 12.1 9.5 12.3 8.4 12.8 8.3 12.8 8.2 12.8 8.1 12.8 7.9 12.8 7.8 12.4 7.8 12.2 7.7 12.1 7.8 11.9 8 11.8 8.4 11.7 8.8 11.5 9.2 11.4 10 11.2 10.9 11.1 11.7 11.2ZM16.3 5.9C17.3 5.9 18 6.6 18 7.6 18 8.5 17.3 9.3 16.3 9.3 15.4 9.3 14.7 8.5 14.7 7.6 14.7 6.6 15.4 5.9 16.3 5.9ZM8.3 5C9.2 5 9.9 5.8 9.9 6.7 9.9 7.7 9.2 8.4 8.2 8.4 7.3 8.4 6.6 7.7 6.6 6.7 6.6 5.8 7.3 5 8.3 5Z"/></g></g></svg>'
+                'icon'        => '<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 23 23"><g fill="none"><g fill="#3B86FF"><path d="M11.5 0C17.9 0 23 5.1 23 11.5 23 17.9 17.9 23 11.5 23 10.6 23 9.6 22.9 8.8 22.7L8.8 22.6C9.3 22.5 9.7 22.3 10 21.9 10.3 21.6 10.4 21.3 10.4 20.9 10.8 21 11.1 21 11.5 21 16.7 21 21 16.7 21 11.5 21 6.3 16.7 2 11.5 2 6.3 2 2 6.3 2 11.5 2 13 2.3 14.3 2.9 15.6 2.7 16 2.4 16.3 2.2 16.8L2.1 17.1 2.1 17.3C2 17.5 2 17.7 2 18 0.7 16.1 0 13.9 0 11.5 0 5.1 5.1 0 11.5 0ZM6 13.6C6 13.7 6.1 13.8 6.1 13.9 6.3 14.5 6.2 15.7 6.1 16.4 6.1 16.6 6 16.9 6 17.1 6 17.1 6.1 17.1 6.1 17.1 7.1 16.9 8.2 16 9.3 15.5 9.8 15.2 10.4 15 10.9 15 11.2 15 11.4 15 11.6 15.2 11.9 15.4 12.1 16 11.6 16.4 11.5 16.5 11.3 16.6 11.1 16.7 10.5 17 9.9 17.4 9.3 17.7 9 17.9 9 18.1 9.1 18.5 9.2 18.9 9.3 19.4 9.3 19.8 9.4 20.3 9.3 20.8 9 21.2 8.8 21.5 8.5 21.6 8.1 21.7 7.9 21.8 7.6 21.9 7.3 21.9L6.5 22C6.3 22 6 21.9 5.8 21.9 5 21.8 4.4 21.5 3.9 20.9 3.3 20.4 3.1 19.6 3 18.8L3 18.5C3 18.2 3 17.9 3.1 17.7L3.1 17.6C3.2 17.1 3.5 16.7 3.7 16.3 4 15.9 4.2 15.4 4.3 15 4.4 14.6 4.4 14.5 4.6 14.2 4.6 13.9 4.7 13.7 4.9 13.6 5.2 13.2 5.7 13.2 6 13.6ZM11.7 11.2C13.1 11.2 14.3 11.7 15.2 12.9 15.3 13 15.4 13.1 15.4 13.2 15.4 13.4 15.3 13.8 15.2 13.8 15 13.9 14.9 13.8 14.8 13.7 14.6 13.5 14.4 13.2 14.1 13.1 13.5 12.6 12.8 12.3 12 12.2 10.7 12.1 9.5 12.3 8.4 12.8 8.3 12.8 8.2 12.8 8.1 12.8 7.9 12.8 7.8 12.4 7.8 12.2 7.7 12.1 7.8 11.9 8 11.8 8.4 11.7 8.8 11.5 9.2 11.4 10 11.2 10.9 11.1 11.7 11.2ZM16.3 5.9C17.3 5.9 18 6.6 18 7.6 18 8.5 17.3 9.3 16.3 9.3 15.4 9.3 14.7 8.5 14.7 7.6 14.7 6.6 15.4 5.9 16.3 5.9ZM8.3 5C9.2 5 9.9 5.8 9.9 6.7 9.9 7.7 9.2 8.4 8.2 8.4 7.3 8.4 6.6 7.7 6.6 6.7 6.6 5.8 7.3 5 8.3 5Z"/></g></g></svg>',
 			),
 			array(
 				'id'          => 'found-better-plugin',
@@ -747,7 +760,7 @@ class Insights {
 			),
 			array(
 				'id'          => 'not-have-that-feature',
-				'text'        => $this->client->__trans( "Missing a specific feature" ),
+				'text'        => $this->client->__trans( 'Missing a specific feature' ),
 				'placeholder' => $this->client->__trans( 'Could you tell us more about that feature?' ),
                 'icon'        => '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="17" viewBox="0 0 24 17"><g fill="none"><g fill="#3B86FF"><path d="M19.4 0C19.7 0.6 19.8 1.3 19.8 2 19.8 3.2 19.4 4.4 18.5 5.3 17.6 6.2 16.5 6.7 15.2 6.7 15.2 6.7 15.2 6.7 15.2 6.7 14 6.7 12.9 6.2 12 5.3 11.2 4.4 10.7 3.3 10.7 2 10.7 1.3 10.8 0.6 11.1 0L7.6 0 7 0 6.5 0 6.5 5.7C6.3 5.6 5.9 5.3 5.6 5.1 5 4.6 4.3 4.3 3.5 4.3 3.5 4.3 3.5 4.3 3.4 4.3 1.6 4.4 0 5.9 0 7.9 0 8.6 0.2 9.2 0.5 9.7 1.1 10.8 2.2 11.5 3.5 11.5 4.3 11.5 5 11.2 5.6 10.8 6 10.5 6.3 10.3 6.5 10.2L6.5 10.2 6.5 17 6.5 17 7 17 7.6 17 22.5 17C23.3 17 24 16.3 24 15.5L24 0 19.4 0Z"/></g></g></svg>',
 			),
@@ -759,7 +772,7 @@ class Insights {
 			),
 			array(
 				'id'          => 'looking-for-other',
-				'text'        => $this->client->__trans( "Not what I was looking" ),
+				'text'        => $this->client->__trans( 'Not what I was looking' ),
 				'placeholder' => $this->client->__trans( 'Could you tell us a bit more?' ),
                 'icon'        => '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="17" viewBox="0 0 24 17"><g fill="none"><g fill="#3B86FF"><path d="M23.5 9C23.5 9 23.5 8.9 23.5 8.9 23.5 8.9 23.5 8.9 23.5 8.9 23.4 8.6 23.2 8.3 23 8 22.2 6.5 20.6 3.7 19.8 2.6 18.8 1.3 17.7 0 16.1 0 15.7 0 15.3 0.1 14.9 0.2 13.8 0.6 12.6 1.2 12.3 2.7L11.7 2.7C11.4 1.2 10.2 0.6 9.1 0.2 8.7 0.1 8.3 0 7.9 0 6.3 0 5.2 1.3 4.2 2.6 3.4 3.7 1.8 6.5 1 8 0.8 8.3 0.6 8.6 0.5 8.9 0.5 8.9 0.5 8.9 0.5 8.9 0.5 8.9 0.5 9 0.5 9 0.2 9.7 0 10.5 0 11.3 0 14.4 2.5 17 5.5 17 7.3 17 8.8 16.1 9.8 14.8L14.2 14.8C15.2 16.1 16.7 17 18.5 17 21.5 17 24 14.4 24 11.3 24 10.5 23.8 9.7 23.5 9ZM5.5 15C3.6 15 2 13.2 2 11 2 8.8 3.6 7 5.5 7 7.4 7 9 8.8 9 11 9 13.2 7.4 15 5.5 15ZM18.5 15C16.6 15 15 13.2 15 11 15 8.8 16.6 7 18.5 7 20.4 7 22 8.8 22 11 22 13.2 20.4 15 18.5 15Z"/></g></g></svg>',
 			),
@@ -786,12 +799,15 @@ class Insights {
      * @return void
      */
     public function uninstall_reason_submission() {
+        if ( ! isset( $_POST['nonce'] ) ) {
+            return;
+        }
 
         if ( ! isset( $_POST['reason_id'] ) ) {
             wp_send_json_error();
         }
 
-        if ( ! wp_verify_nonce( sanitize_text_field($_POST['nonce']), 'appsero-security-nonce' ) ) {
+        if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['nonce'] ) ), 'appsero-security-nonce' ) ) {
             wp_send_json_error( 'Nonce verification failed' );
         }
 
@@ -799,14 +815,13 @@ class Insights {
             wp_send_json_error( 'You are not allowed for this task' );
         }
 
-        $data                = $this->get_tracking_data();
-        $data['reason_id']   = sanitize_text_field( $_POST['reason_id'] );
-        $data['reason_info'] = isset( $_REQUEST['reason_info'] ) ? trim( stripslashes( sanitize_text_field($_REQUEST['reason_info']) ) ) : '';
+        $data['reason_id']   = sanitize_text_field( wp_unslash( $_POST['reason_id'] ) );
+        $data['reason_info'] = isset( $_REQUEST['reason_info'] ) ? trim( sanitize_text_field( wp_unslash( $_REQUEST['reason_info'] ) ) ) : '';
 
         $this->client->send_request( $data, 'deactivate' );
 
         /**
-         * Fire after the plugin _uninstall_reason_submitted 
+         * Fire after the plugin _uninstall_reason_submitted
          */
         do_action( $this->client->slug . '_uninstall_reason_submitted', $data );
 
@@ -821,7 +836,7 @@ class Insights {
     public function deactivate_scripts() {
         global $pagenow;
 
-        if ( 'plugins.php' != $pagenow ) {
+        if ( 'plugins.php' !== $pagenow ) {
             return;
         }
 
@@ -863,18 +878,18 @@ class Insights {
                     <?php endif; ?>
                     <div class="wd-dr-modal-reason-input"><textarea></textarea></div>
                     <p class="wd-dr-modal-reasons-bottom">
-                       <?php
-                       echo sprintf(
-	                       $this->client->__trans( 'We share your data with <a href="%1$s" target="_blank">Appsero</a> to troubleshoot problems &amp; make product improvements. <a href="%2$s" target="_blank">Learn more</a> about how Appsero handles your data.'),
-	                       esc_url( 'https://appsero.com/' ),
-                           esc_url( 'https://appsero.com/privacy-policy' )
-                       );
-                       ?>
+                        <?php
+						echo sprintf(
+							$this->client->__trans( 'We share your data with <a href="%1$s" target="_blank">Appsero</a> to troubleshoot problems &amp; make product improvements. <a href="%2$s" target="_blank">Learn more</a> about how Appsero handles your data.' ),
+							esc_url( 'https://appsero.com/' ),
+                            esc_url( 'https://appsero.com/privacy-policy' )
+                        );
+						?>
                     </p>
                 </div>
 
                 <div class="wd-dr-modal-footer">
-                    <a href="#" class="dont-bother-me wd-dr-button-secondary"><?php $this->client->_etrans( "Skip & Deactivate" ); ?></a>
+                    <a href="#" class="dont-bother-me wd-dr-button-secondary"><?php $this->client->_etrans( 'Skip & Deactivate' ); ?></a>
                     <button class="wd-dr-button-secondary wd-dr-cancel-modal"><?php $this->client->_etrans( 'Cancel' ); ?></button>
                     <button class="wd-dr-submit-modal"><?php $this->client->_etrans( 'Submit & Deactivate' ); ?></button>
                 </div>
@@ -976,7 +991,7 @@ class Insights {
      */
     public function theme_deactivated( $new_name, $new_theme, $old_theme ) {
         // Make sure this is appsero theme
-        if ( $old_theme->get_template() == $this->client->slug ) {
+        if ( $old_theme->get_template() === $this->client->slug ) {
             $this->client->send_request( $this->get_tracking_data(), 'deactivate' );
         }
     }

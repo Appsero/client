@@ -21,14 +21,13 @@ class Updater {
      * @param Appsero\Client
      */
     public function __construct( Client $client ) {
-
         $this->client    = $client;
         $this->cache_key = 'appsero_' . md5( $this->client->slug ) . '_version_info';
 
         // Run hooks.
-        if ( $this->client->type == 'plugin' ) {
+        if ( $this->client->type === 'plugin' ) {
             $this->run_plugin_hooks();
-        } elseif ( $this->client->type == 'theme' ) {
+        } elseif ( $this->client->type === 'theme' ) {
             $this->run_theme_hooks();
         }
     }
@@ -59,10 +58,10 @@ class Updater {
         global $pagenow;
 
         if ( ! is_object( $transient_data ) ) {
-            $transient_data = new \stdClass;
+            $transient_data = new \stdClass();
         }
 
-        if ( 'plugins.php' == $pagenow && is_multisite() ) {
+        if ( 'plugins.php' === $pagenow && is_multisite() ) {
             return $transient_data;
         }
 
@@ -73,7 +72,6 @@ class Updater {
         $version_info = $this->get_version_info();
 
         if ( false !== $version_info && is_object( $version_info ) && isset( $version_info->new_version ) ) {
-
             unset( $version_info->sections );
 
             // If new version available then set to `response`
@@ -100,13 +98,13 @@ class Updater {
         global $pagenow;
 
         // If updater page then fetch from API now
-        if ( 'update-core.php' == $pagenow ) {
+        if ( 'update-core.php' === $pagenow ) {
             return false; // Force to fetch data
         }
 
         $value = get_transient( $this->cache_key );
 
-        if( ! $value && ! isset( $value->name ) ) {
+        if ( ! $value && ! isset( $value->name ) ) {
             return false; // Cache is expired
         }
 
@@ -142,7 +140,6 @@ class Updater {
      * Get plugin info from Appsero
      */
     private function get_project_latest_version() {
-
         $license = $this->client->license()->get_license();
 
         $params = array(
@@ -192,12 +189,11 @@ class Updater {
      * @return object $data
      */
     public function plugins_api_filter( $data, $action = '', $args = null ) {
-
-        if ( $action != 'plugin_information' ) {
+        if ( $action !== 'plugin_information' ) {
             return $data;
         }
 
-        if ( ! isset( $args->slug ) || ( $args->slug != $this->client->slug ) ) {
+        if ( ! isset( $args->slug ) || ( $args->slug !== $this->client->slug ) ) {
             return $data;
         }
 
@@ -211,10 +207,10 @@ class Updater {
         global $pagenow;
 
         if ( ! is_object( $transient_data ) ) {
-            $transient_data = new \stdClass;
+            $transient_data = new \stdClass();
         }
 
-        if ( 'themes.php' == $pagenow && is_multisite() ) {
+        if ( 'themes.php' === $pagenow && is_multisite() ) {
             return $transient_data;
         }
 
