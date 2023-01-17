@@ -230,14 +230,14 @@ class Client {
 
         $response = wp_remote_post(
             $url, array(
-				'method'      => 'POST',
-				'timeout'     => 30,
-				'redirection' => 5,
-				'httpversion' => '1.0',
-				'blocking'    => $blocking,
-				'headers'     => $headers,
-				'body'        => array_merge( $params, array( 'client' => $this->version ) ),
-				'cookies'     => array(),
+                'method'      => 'POST',
+                'timeout'     => 30,
+                'redirection' => 5,
+                'httpversion' => '1.0',
+                'blocking'    => $blocking,
+                'headers'     => $headers,
+                'body'        => array_merge( $params, array( 'client' => $this->version ) ),
+                'cookies'     => array(),
             )
         );
 

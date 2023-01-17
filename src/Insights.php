@@ -208,19 +208,19 @@ class Insights {
     protected function get_tracking_data() {
         $all_plugins = $this->get_all_plugins();
 
-        $users = get_users(
+        $users  = get_users(
             array(
-				'role'    => 'administrator',
-				'orderby' => 'ID',
-				'order'   => 'ASC',
-				'number'  => 1,
-				'paged'   => 1,
+                'role'    => 'administrator',
+                'orderby' => 'ID',
+                'order'   => 'ASC',
+                'number'  => 1,
+                'paged'   => 1,
             )
         );
 
         $admin_user = ( is_array( $users ) && ! empty( $users ) ) ? $users[0] : false;
         $first_name = '';
-        $last_name = '';
+        $last_name  = '';
 
         if ( $admin_user ) {
             $first_name = $admin_user->first_name ? $admin_user->first_name : $admin_user->display_name;
@@ -256,8 +256,8 @@ class Insights {
                 }
 
                 $plugins_data[ $slug ] = array(
-                    'name' => isset( $plugin['name'] ) ? $plugin['name'] : '',
-                    'version' => isset( $plugin['version'] ) ? $plugin['version'] : '',
+                    'name'      => isset( $plugin['name'] ) ? $plugin['name'] : '',
+                    'version'   => isset( $plugin['version'] ) ? $plugin['version'] : '',
                 );
             }
 
@@ -641,8 +641,8 @@ class Insights {
         }
 
         return array(
-			'active_plugins' => $active_plugins,
-			'inactive_plugins' => $plugins,
+			'active_plugins'    => $active_plugins,
+			'inactive_plugins'  => $plugins,
 		);
     }
 
