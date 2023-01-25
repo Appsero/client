@@ -258,6 +258,7 @@ class Client {
     /**
      * Translate function _e()
      */
+    // phpcs:ignore
     public function _etrans( $text ) {
         call_user_func( '_e', $text, $this->textdomain );
     }
@@ -265,6 +266,7 @@ class Client {
     /**
      * Translate function __()
      */
+    // phpcs:ignore
     public function __trans( $text ) {
         return call_user_func( '__', $text, $this->textdomain );
     }

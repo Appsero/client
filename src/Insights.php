@@ -208,7 +208,7 @@ class Insights {
     protected function get_tracking_data() {
         $all_plugins = $this->get_all_plugins();
 
-        $users  = get_users(
+        $users = get_users(
             array(
                 'role'    => 'administrator',
                 'orderby' => 'ID',
@@ -550,8 +550,8 @@ class Insights {
         global $wpdb;
 
         $server_data = array();
-
         if ( isset( $_SERVER['SERVER_SOFTWARE'] ) && ! empty( $_SERVER['SERVER_SOFTWARE'] ) ) {
+            // phpcs:ignore
             $server_data['software'] = sanitize_key( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) );
         }
 
