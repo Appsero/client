@@ -552,7 +552,7 @@ class Insights {
         $server_data = array();
         if ( isset( $_SERVER['SERVER_SOFTWARE'] ) && ! empty( $_SERVER['SERVER_SOFTWARE'] ) ) {
             // phpcs:ignore
-            $server_data['software'] = sanitize_key( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) );
+            $server_data['software'] = $_SERVER['SERVER_SOFTWARE'];
         }
 
         if ( function_exists( 'phpversion' ) ) {
