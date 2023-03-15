@@ -1,6 +1,6 @@
 <?php
 namespace Appsero;
-
+ 
 /**
  * Appsero Insights
  *
@@ -490,6 +490,11 @@ class Insights {
         $this->clear_schedule_event();
         $this->schedule_event();
         $this->send_tracking_data();
+
+        /**
+         * Fires when the user has opted in tracking.
+         */
+        do_action( $this->client->slug . '_tracker_optin', $this->get_tracking_data() );
     }
 
     /**
@@ -504,6 +509,11 @@ class Insights {
         $this->send_tracking_skipped_request();
 
         $this->clear_schedule_event();
+
+        /**
+         * Fires when the user has opted out tracking.
+         */
+        do_action( $this->client->slug . '_tracker_optout' );
     }
 
     /**
@@ -781,7 +791,7 @@ class Insights {
             wp_send_json_error();
         }
 
-        if ( ! wp_verify_nonce( $_POST['nonce'], 'appsero-security-nonce' ) ) {
+        if ( ! wp_verify_nonce( sanitize_text_field($_POST['nonce']), 'appsero-security-nonce' ) ) {
             wp_send_json_error( 'Nonce verification failed' );
         }
 
@@ -791,9 +801,14 @@ class Insights {
 
         $data                = $this->get_tracking_data();
         $data['reason_id']   = sanitize_text_field( $_POST['reason_id'] );
-        $data['reason_info'] = isset( $_REQUEST['reason_info'] ) ? trim( stripslashes( $_REQUEST['reason_info'] ) ) : '';
+        $data['reason_info'] = isset( $_REQUEST['reason_info'] ) ? trim( stripslashes( sanitize_text_field($_REQUEST['reason_info']) ) ) : '';
 
         $this->client->send_request( $data, 'deactivate' );
+
+        /**
+         * Fire after the plugin _uninstall_reason_submitted 
+         */
+        do_action( $this->client->slug . '_uninstall_reason_submitted', $data );
 
         wp_send_json_success();
     }
