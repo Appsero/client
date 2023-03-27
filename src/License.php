@@ -303,12 +303,12 @@ class License {
      * License form submit
      */
     public function license_form_submit() {
-        if (! isset($_POST['_nonce'])) {
+        if ( ! isset( $_POST['_nonce'] ) ) {
             return;
         }
 
-        if (! wp_verify_nonce(sanitize_key(wp_unslash($_POST['_nonce'])), $this->client->name)) {
-            $this->error = $this->client->__trans('Nonce vefification failed.');
+        if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_nonce'] ) ), $this->client->name ) ) {
+            $this->error = $this->client->__trans( 'Nonce vefification failed.' );
 
             return;
         }
