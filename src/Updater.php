@@ -19,6 +19,13 @@ class Updater {
     protected $client;
 
     /**
+     * Cache key
+     *
+     * @var string
+     */
+    protected $cache_key;
+
+    /**
      * Initialize the class
      *
      * @param Appsero\Client

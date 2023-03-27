@@ -257,8 +257,8 @@ class License {
 
             <?php
                 $this->show_license_page_notices();
-        do_action( 'before_appsero_license_section' );
-        ?>
+                do_action( 'before_appsero_license_section' );
+            ?>
 
             <div class="appsero-license-settings appsero-license-section">
                 <?php $this->show_license_page_card_header( $license ); ?>
@@ -267,7 +267,7 @@ class License {
                     <p>
                         <?php printf( $this->client->__trans( 'Activate <strong>%s</strong> by your license key to get professional support and automatic update from your WordPress dashboard.' ), $this->client->name ); ?>
                     </p>
-                    <form method="post" novalidate="novalidate" spellcheck="false">
+                    <form method="post" action="<?php echo $this->form_action_url(); ?>" novalidate="novalidate" spellcheck="false">
                         <input type="hidden" name="_action" value="<?php echo $action; ?>">
                         <input type="hidden" name="_nonce" value="<?php echo wp_create_nonce( $this->client->name ); ?>">
                         <div class="license-input-fields">
@@ -287,10 +287,10 @@ class License {
                     </form>
 
                     <?php
-                if ( 'deactive' === $action && isset( $license['remaining'] ) ) {
-                    $this->show_active_license_info( $license );
-                }
-        ?>
+                        if ( 'deactive' === $action && isset( $license['remaining'] ) ) {
+                            $this->show_active_license_info( $license );
+                        }
+                    ?>
                 </div>
             </div> <!-- /.appsero-license-settings -->
 
@@ -558,7 +558,7 @@ class License {
                 } else {
                     echo '<p>' . $this->client->__trans( 'Never' ) . '</p>';
                 }
-        ?>
+                ?>
             </div>
         </div>
         <?php
@@ -600,7 +600,7 @@ class License {
             <span><?php echo $this->client->__trans( 'Activate License' ); ?></span>
 
             <?php if ( $license && $license['key'] ) { ?>
-            <form method="post" class="appsero-license-right-form" novalidate="novalidate" spellcheck="false">
+            <form method="post" action="<?php echo $this->form_action_url(); ?>" class="appsero-license-right-form" novalidate="novalidate" spellcheck="false">
                 <input type="hidden" name="_action" value="refresh">
                 <input type="hidden" name="_appsero_license_nonce" value="<?php echo wp_create_nonce( $this->client->name ); ?>">
                 <button type="submit" name="submit" class="appsero-license-refresh-button">
@@ -775,6 +775,18 @@ class License {
                 add_action( 'switch_theme', [ $this, 'clear_scheduler' ] );
                 break;
         }
+    }
+
+    /**
+     * Form action URL
+     */
+    private function form_action_url() {
+        $url = add_query_arg(
+            $_GET,
+            admin_url(basename($_SERVER['SCRIPT_NAME']))
+        );
+
+        return apply_filters('appsero_client_license_form_action', $url);
     }
 
     /**

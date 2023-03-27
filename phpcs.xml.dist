@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<ruleset name="WordPress Coding Standards for Dokan">
+<ruleset name="WordPress Coding Standards for Appsero Client">
     <description>Generally-applicable sniffs for WordPress plugins.</description>
 
     <!-- What to scan -->
