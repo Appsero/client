@@ -367,8 +367,8 @@ class Insights {
      * @return bool
      */
     private function is_local_server() {
-        $host       = isset( $_SERVER['HTTP_HOST'] ) ? wp_unslash( $_SERVER['HTTP_HOST'] ) : 'localhost';
-        $ip         = isset( $_SERVER['SERVER_ADDR'] ) ? wp_unslash( $_SERVER['SERVER_ADDR'] ) : '127.0.0.1';
+        $host       = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : 'localhost';
+        $ip         = isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : '127.0.0.1';
         $is_local   = false;
 
         if ( in_array( $ip, [ '127.0.0.1', '::1' ], true )
@@ -885,8 +885,8 @@ class Insights {
                             $this->client->__trans( 'We share your data with <a href="%1$s" target="_blank">Appsero</a> to troubleshoot problems &amp; make product improvements. <a href="%2$s" target="_blank">Learn more</a> about how Appsero handles your data.' ),
                             esc_url( 'https://appsero.com/' ),
                             esc_url( 'https://appsero.com/privacy-policy' )
-                        );
-                        ?>
+						);
+						?>
                     </p>
                 </div>
 
