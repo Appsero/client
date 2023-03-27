@@ -367,8 +367,8 @@ class Insights {
      * @return bool
      */
     private function is_local_server() {
-        $host       = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_key( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : 'localhost';
-        $ip         = isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_key( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : '127.0.0.1';
+        $host       = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : 'localhost';
+        $ip         = isset( $_SERVER['SERVER_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_ADDR'] ) ) : '127.0.0.1';
         $is_local   = false;
 
         if ( in_array( $ip, [ '127.0.0.1', '::1' ], true )
@@ -426,8 +426,8 @@ class Insights {
             return;
         }
 
-        $optin_url  = wp_nonce_url(add_query_arg($this->client->slug . '_tracker_optin', 'true'), '_wpnonce');
-        $optout_url = wp_nonce_url(add_query_arg($this->client->slug . '_tracker_optout', 'true'), '_wpnonce');
+        $optin_url  = wp_nonce_url( add_query_arg( $this->client->slug . '_tracker_optin', 'true' ), '_wpnonce' );
+        $optout_url = wp_nonce_url( add_query_arg( $this->client->slug . '_tracker_optout', 'true' ), '_wpnonce' );
 
         if ( empty( $this->notice ) ) {
             $notice = sprintf( $this->client->__trans( 'Want to help make <strong>%1$s</strong> even more awesome? Allow %1$s to collect non-sensitive diagnostic data and usage information.' ), $this->client->name );
@@ -462,25 +462,25 @@ class Insights {
      * @return void
      */
     public function handle_optin_optout() {
-        if (! isset($_GET['_wpnonce'])) {
+        if ( ! isset( $_GET['_wpnonce'] ) ) {
             return;
         }
 
-        if (! wp_verify_nonce(sanitize_key($_GET['_wpnonce']), '_wpnonce')) {
+        if ( ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), '_wpnonce' ) ) {
             return;
         }
 
-        if (isset($_GET[ $this->client->slug . '_tracker_optin' ]) && $_GET[ $this->client->slug . '_tracker_optin' ] === 'true') {
+        if ( isset( $_GET[ $this->client->slug . '_tracker_optin' ] ) && $_GET[ $this->client->slug . '_tracker_optin' ] === 'true' ) {
             $this->optin();
 
-            wp_safe_redirect(remove_query_arg($this->client->slug . '_tracker_optin'));
+            wp_safe_redirect( remove_query_arg( $this->client->slug . '_tracker_optin' ) );
             exit;
         }
 
-        if (isset($_GET[ $this->client->slug . '_tracker_optout' ]) && isset($_GET[ $this->client->slug . '_tracker_optout' ]) && $_GET[ $this->client->slug . '_tracker_optout' ] === 'true') {
+        if ( isset( $_GET[ $this->client->slug . '_tracker_optout' ] ) && isset( $_GET[ $this->client->slug . '_tracker_optout' ] ) && $_GET[ $this->client->slug . '_tracker_optout' ] === 'true' ) {
             $this->optout();
 
-            wp_safe_redirect(remove_query_arg($this->client->slug . '_tracker_optout'));
+            wp_safe_redirect( remove_query_arg( $this->client->slug . '_tracker_optout' ) );
             exit;
         }
     }
@@ -885,8 +885,8 @@ class Insights {
                             $this->client->__trans( 'We share your data with <a href="%1$s" target="_blank">Appsero</a> to troubleshoot problems &amp; make product improvements. <a href="%2$s" target="_blank">Learn more</a> about how Appsero handles your data.' ),
                             esc_url( 'https://appsero.com/' ),
                             esc_url( 'https://appsero.com/privacy-policy' )
-                        );
-                        ?>
+						);
+						?>
                     </p>
                 </div>
 
