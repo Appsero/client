@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e75b3065c291580b941e334bfd07be20",
+    "content-hash": "1be317eebec8c5e5dfcea85a4ac2be7b",
     "packages": [],
     "packages-dev": [
         {
@@ -1814,6 +1814,44 @@
             "time": "2022-06-18T07:21:10+00:00"
         },
         {
+            "name": "tareq1988/wp-php-cs-fixer",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/tareq1988/wp-php-cs-fixer.git",
+                "reference": "eeef65598ae7bac55a09073e666ec0eabf303a12"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/tareq1988/wp-php-cs-fixer/zipball/eeef65598ae7bac55a09073e666ec0eabf303a12",
+                "reference": "eeef65598ae7bac55a09073e666ec0eabf303a12",
+                "shasum": ""
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "WeDevs\\Fixer\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Tareq Hasan",
+                    "email": "tareq@wedevs.com"
+                }
+            ],
+            "description": "WordPress rules for php-cs-fixer",
+            "support": {
+                "issues": "https://github.com/tareq1988/wp-php-cs-fixer/issues",
+                "source": "https://github.com/tareq1988/wp-php-cs-fixer/tree/master"
+            },
+            "time": "2022-08-26T09:36:52+00:00"
+        },
+        {
             "name": "theseer/tokenizer",
             "version": "1.2.1",
             "source": {
@@ -1922,7 +1960,8 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "wp-coding-standards/wpcs": 20,
-        "phpcompatibility/phpcompatibility-wp": 20
+        "phpcompatibility/phpcompatibility-wp": 20,
+        "tareq1988/wp-php-cs-fixer": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

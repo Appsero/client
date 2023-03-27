@@ -1,5 +1,8 @@
 <?php
+
 namespace Appsero;
+
+use stdClass;
 
 /**
  * Appsero Updater
@@ -38,8 +41,8 @@ class Updater {
      * @return void
      */
     public function run_plugin_hooks() {
-        add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_plugin_update' ) );
-        add_filter( 'plugins_api', array( $this, 'plugins_api_filter' ), 10, 3 );
+        add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'check_plugin_update' ] );
+        add_filter( 'plugins_api', [ $this, 'plugins_api_filter' ], 10, 3 );
     }
 
     /**
@@ -48,7 +51,7 @@ class Updater {
      * @return void
      */
     public function run_theme_hooks() {
-        add_filter( 'pre_set_site_transient_update_themes', array( $this, 'check_theme_update' ) );
+        add_filter( 'pre_set_site_transient_update_themes', [ $this, 'check_theme_update' ] );
     }
 
     /**
@@ -58,7 +61,7 @@ class Updater {
         global $pagenow;
 
         if ( ! is_object( $transient_data ) ) {
-            $transient_data = new \stdClass();
+            $transient_data = new stdClass();
         }
 
         if ( 'plugins.php' === $pagenow && is_multisite() ) {
@@ -82,7 +85,7 @@ class Updater {
                 $transient_data->no_update[ $this->client->basename ] = $version_info;
             }
 
-            $transient_data->last_checked = time();
+            $transient_data->last_checked                       = time();
             $transient_data->checked[ $this->client->basename ] = $this->client->project_version;
         }
 
@@ -92,7 +95,7 @@ class Updater {
     /**
      * Get version info from database
      *
-     * @return Object or Boolean
+     * @return object or Boolean
      */
     private function get_cached_version_info() {
         global $pagenow;
@@ -142,13 +145,13 @@ class Updater {
     private function get_project_latest_version() {
         $license = $this->client->license()->get_license();
 
-        $params = array(
+        $params = [
             'version'     => $this->client->project_version,
             'name'        => $this->client->name,
             'slug'        => $this->client->slug,
             'basename'    => $this->client->basename,
             'license_key' => ! empty( $license ) && isset( $license['key'] ) ? $license['key'] : '',
-        );
+        ];
 
         $route = 'update/' . $this->client->hash . '/check';
 
@@ -182,9 +185,9 @@ class Updater {
     /**
      * Updates information on the "View version x.x details" page with custom data.
      *
-     * @param mixed   $data
-     * @param string  $action
-     * @param object  $args
+     * @param mixed  $data
+     * @param string $action
+     * @param object $args
      *
      * @return object $data
      */
@@ -207,7 +210,7 @@ class Updater {
         global $pagenow;
 
         if ( ! is_object( $transient_data ) ) {
-            $transient_data = new \stdClass();
+            $transient_data = new stdClass();
         }
 
         if ( 'themes.php' === $pagenow && is_multisite() ) {
@@ -221,7 +224,6 @@ class Updater {
         $version_info = $this->get_version_info();
 
         if ( false !== $version_info && is_object( $version_info ) && isset( $version_info->new_version ) ) {
-
             // If new version available then set to `response`
             if ( version_compare( $this->client->project_version, $version_info->new_version, '<' ) ) {
                 $transient_data->response[ $this->client->slug ] = (array) $version_info;
@@ -230,7 +232,7 @@ class Updater {
                 $transient_data->no_update[ $this->client->slug ] = (array) $version_info;
             }
 
-            $transient_data->last_checked = time();
+            $transient_data->last_checked                   = time();
             $transient_data->checked[ $this->client->slug ] = $this->client->project_version;
         }
 
@@ -250,5 +252,4 @@ class Updater {
 
         return $version_info;
     }
-
 }

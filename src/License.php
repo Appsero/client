@@ -71,10 +71,10 @@ class License {
         $this->schedule_hook = $this->client->slug . '_license_check_event';
 
         // Creating WP Ajax Endpoint to refresh license remotely
-        add_action( 'wp_ajax_appsero_refresh_license_' . $this->client->hash, array( $this, 'refresh_license_api' ) );
+        add_action( 'wp_ajax_appsero_refresh_license_' . $this->client->hash, [ $this, 'refresh_license_api' ] );
 
         // Run hook to check license status daily
-        add_action( $this->schedule_hook, array( $this, 'check_license_status' ) );
+        add_action( $this->schedule_hook, [ $this, 'check_license_status' ] );
 
         // Active/Deactive corn schedule
         $this->run_schedule();
@@ -144,41 +144,38 @@ class License {
     /**
      * Send common request
      *
-     * @param $license_key
-     * @param $route
-     *
      * @return array
      */
     protected function send_request( $license_key, $route ) {
-        $params = array(
+        $params = [
             'license_key' => $license_key,
             'url'         => esc_url( home_url() ),
             'is_local'    => $this->client->is_local_server(),
-        );
+        ];
 
         $response = $this->client->send_request( $params, $route, true );
 
         if ( is_wp_error( $response ) ) {
-            return array(
+            return [
                 'success' => false,
                 'error'   => $response->get_error_message(),
-            );
+            ];
         }
 
         $response = json_decode( wp_remote_retrieve_body( $response ), true );
 
         if ( empty( $response ) || isset( $response['exception'] ) ) {
-            return array(
+            return [
                 'success' => false,
                 'error'   => $this->client->__trans( 'Unknown error occurred, Please try again.' ),
-            );
+            ];
         }
 
         if ( isset( $response['errors'] ) && isset( $response['errors']['license_key'] ) ) {
-            $response = array(
+            $response = [
                 'success' => false,
                 'error'   => $response['errors']['license_key'][0],
-            );
+            ];
         }
 
         return $response;
@@ -191,9 +188,9 @@ class License {
         $this->check_license_status();
 
         return wp_send_json(
-            array(
+            [
                 'message' => 'License refreshed successfully.',
-            ),
+            ],
             200
         );
     }
@@ -205,8 +202,8 @@ class License {
      *
      * @return void
      */
-    public function add_settings_page( $args = array() ) {
-        $defaults = array(
+    public function add_settings_page( $args = [] ) {
+        $defaults = [
             'type'        => 'menu', // Can be: menu, options, submenu
             'page_title'  => 'Manage License',
             'menu_title'  => 'Manage License',
@@ -215,11 +212,11 @@ class License {
             'icon_url'    => '',
             'position'    => null,
             'parent_slug' => '',
-        );
+        ];
 
         $this->menu_args = wp_parse_args( $args, $defaults );
 
-        add_action( 'admin_menu', array( $this, 'admin_menu' ), 99 );
+        add_action( 'admin_menu', [ $this, 'admin_menu' ], 99 );
     }
 
     /**
@@ -260,8 +257,8 @@ class License {
 
             <?php
                 $this->show_license_page_notices();
-                do_action( 'before_appsero_license_section' );
-            ?>
+        do_action( 'before_appsero_license_section' );
+        ?>
 
             <div class="appsero-license-settings appsero-license-section">
                 <?php $this->show_license_page_card_header( $license ); ?>
@@ -290,10 +287,10 @@ class License {
                     </form>
 
                     <?php
-					if ( 'deactive' === $action && isset( $license['remaining'] ) ) {
-						$this->show_active_license_info( $license );
-					}
-					?>
+                if ( 'deactive' === $action && isset( $license['remaining'] ) ) {
+                    $this->show_active_license_info( $license );
+                }
+        ?>
                 </div>
             </div> <!-- /.appsero-license-settings -->
 
@@ -323,7 +320,7 @@ class License {
         }
 
         $license_key = isset( $_POST['license_key'] ) ? sanitize_text_field( wp_unslash( $_POST['license_key'] ) ) : '';
-        $action = isset( $_POST['_action'] ) ? sanitize_text_field( wp_unslash( $_POST['_action'] ) ) : '';
+        $action      = isset( $_POST['_action'] ) ? sanitize_text_field( wp_unslash( $_POST['_action'] ) ) : '';
 
         switch ( $action ) {
             case 'active':
@@ -555,13 +552,13 @@ class License {
             <div class="single-license-info">
                 <h3><?php $this->client->_etrans( 'Expires in' ); ?></h3>
                 <?php
-				if ( false !== $license['expiry_days'] ) {
-					$occupied = $license['expiry_days'] > 21 ? '' : 'occupied';
-					echo '<p class="' . $occupied . '">' . $license['expiry_days'] . ' days</p>';
-				} else {
-					echo '<p>' . $this->client->__trans( 'Never' ) . '</p>';
-				}
-				?>
+                if ( false !== $license['expiry_days'] ) {
+                    $occupied = $license['expiry_days'] > 21 ? '' : 'occupied';
+                    echo '<p class="' . $occupied . '">' . $license['expiry_days'] . ' days</p>';
+                } else {
+                    echo '<p>' . $this->client->__trans( 'Never' ) . '</p>';
+                }
+        ?>
             </div>
         </div>
         <?php
@@ -602,7 +599,7 @@ class License {
             </svg>
             <span><?php echo $this->client->__trans( 'Activate License' ); ?></span>
 
-            <?php if ( $license && $license['key'] ) : ?>
+            <?php if ( $license && $license['key'] ) { ?>
             <form method="post" class="appsero-license-right-form" novalidate="novalidate" spellcheck="false">
                 <input type="hidden" name="_action" value="refresh">
                 <input type="hidden" name="_appsero_license_nonce" value="<?php echo wp_create_nonce( $this->client->name ); ?>">
@@ -611,7 +608,7 @@ class License {
                     <?php echo $this->client->__trans( 'Refresh License' ); ?>
                 </button>
             </form>
-            <?php endif; ?>
+            <?php } ?>
 
         </div>
         <?php
@@ -635,7 +632,7 @@ class License {
             return;
         }
 
-        $data = array(
+        $data = [
             'key'              => $license_key,
             'status'           => 'activate',
             'remaining'        => $response['remaining'],
@@ -644,7 +641,7 @@ class License {
             'title'            => $response['title'],
             'source_id'        => $response['source_identifier'],
             'recurring'        => $response['recurring'],
-        );
+        ];
 
         update_option( $this->option_key, $data, false );
 
@@ -665,10 +662,10 @@ class License {
 
         $response = $this->deactivate( $license['key'] );
 
-        $data = array(
+        $data = [
             'key'    => '',
             'status' => 'deactivate',
-        );
+        ];
 
         update_option( $this->option_key, $data, false );
 
@@ -689,6 +686,7 @@ class License {
 
         if ( ! $license || ! isset( $license['key'] ) || empty( $license['key'] ) ) {
             $this->error = $this->client->__trans( 'License key not found' );
+
             return;
         }
 
@@ -707,7 +705,7 @@ class License {
             $this->menu_args['menu_title'],
             $this->menu_args['capability'],
             $this->menu_args['menu_slug'],
-            array( $this, 'menu_output' ),
+            [ $this, 'menu_output' ],
             $this->menu_args['icon_url'],
             $this->menu_args['position']
         );
@@ -724,7 +722,7 @@ class License {
             $this->menu_args['menu_title'],
             $this->menu_args['capability'],
             $this->menu_args['menu_slug'],
-            array( $this, 'menu_output' ),
+            [ $this, 'menu_output' ],
             $this->menu_args['position']
         );
     }
@@ -739,7 +737,7 @@ class License {
             $this->menu_args['menu_title'],
             $this->menu_args['capability'],
             $this->menu_args['menu_slug'],
-            array( $this, 'menu_output' ),
+            [ $this, 'menu_output' ],
             $this->menu_args['position']
         );
     }
@@ -768,21 +766,19 @@ class License {
     private function run_schedule() {
         switch ( $this->client->type ) {
             case 'plugin':
-                register_activation_hook( $this->client->file, array( $this, 'schedule_cron_event' ) );
-                register_deactivation_hook( $this->client->file, array( $this, 'clear_scheduler' ) );
+                register_activation_hook( $this->client->file, [ $this, 'schedule_cron_event' ] );
+                register_deactivation_hook( $this->client->file, [ $this, 'clear_scheduler' ] );
                 break;
 
             case 'theme':
-                add_action( 'after_switch_theme', array( $this, 'schedule_cron_event' ) );
-                add_action( 'switch_theme', array( $this, 'clear_scheduler' ) );
+                add_action( 'after_switch_theme', [ $this, 'schedule_cron_event' ] );
+                add_action( 'switch_theme', [ $this, 'clear_scheduler' ] );
                 break;
         }
     }
 
     /**
      * Get input license key
-     *
-     * @param  $action
      *
      * @return $license
      */
@@ -795,7 +791,9 @@ class License {
             $key_length = strlen( $license['key'] );
 
             return str_pad(
-                substr( $license['key'], 0, $key_length / 2 ), $key_length, '*'
+                substr( $license['key'], 0, $key_length / 2 ),
+                $key_length,
+                '*'
             );
         }
 

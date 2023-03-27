@@ -1,4 +1,5 @@
 <?php
+
 namespace Appsero;
 
 /**
@@ -31,6 +32,7 @@ class Client {
 
     /**
      * The plugin/theme file path
+     *
      * @example .../wp-content/plugins/test-slug/test-slug.php
      *
      * @var string
@@ -39,6 +41,7 @@ class Client {
 
     /**
      * Main plugin file
+     *
      * @example test-slug/test-slug.php
      *
      * @var string
@@ -47,6 +50,7 @@ class Client {
 
     /**
      * Slug of the plugin
+     *
      * @example test-slug
      *
      * @var string
@@ -95,12 +99,12 @@ class Client {
      */
     private $license;
 
-	/**
+    /**
      * Initialize the class
      *
-     * @param string  $hash hash of the plugin
-     * @param string  $name readable name of the plugin
-     * @param string  $file main plugin file path
+     * @param string $hash hash of the plugin
+     * @param string $name readable name of the plugin
+     * @param string $file main plugin file path
      */
     public function __construct( $hash, $name, $file ) {
         $this->hash = $hash;
@@ -190,23 +194,23 @@ class Client {
         if ( strpos( $this->file, WP_CONTENT_DIR . '/themes/' ) === false ) {
             $this->basename = plugin_basename( $this->file );
 
-            list( $this->slug, $mainfile) = explode( '/', $this->basename );
+            list( $this->slug, $mainfile ) = explode( '/', $this->basename );
 
             require_once ABSPATH . 'wp-admin/includes/plugin.php';
 
             $plugin_data = get_plugin_data( $this->file );
 
             $this->project_version = $plugin_data['Version'];
-            $this->type = 'plugin';
+            $this->type            = 'plugin';
         } else {
             $this->basename = str_replace( WP_CONTENT_DIR . '/themes/', '', $this->file );
 
-            list( $this->slug, $mainfile) = explode( '/', $this->basename );
+            list( $this->slug, $mainfile ) = explode( '/', $this->basename );
 
             $theme = wp_get_theme( $this->slug );
 
             $this->project_version = $theme->version;
-            $this->type = 'theme';
+            $this->type            = 'theme';
         }
 
         $this->textdomain = $this->slug;
@@ -215,30 +219,31 @@ class Client {
     /**
      * Send request to remote endpoint
      *
-     * @param  array  $params
-     * @param  string $route
+     * @param array  $params
+     * @param string $route
      *
-     * @return array|WP_Error   Array of results including HTTP headers or WP_Error if the request failed.
+     * @return array|WP_Error array of results including HTTP headers or WP_Error if the request failed
      */
     public function send_request( $params, $route, $blocking = false ) {
         $url = $this->endpoint() . $route;
 
-        $headers = array(
+        $headers = [
             'user-agent' => 'Appsero/' . md5( esc_url( home_url() ) ) . ';',
             'Accept'     => 'application/json',
-        );
+        ];
 
         $response = wp_remote_post(
-            $url, array(
+            $url,
+            [
                 'method'      => 'POST',
                 'timeout'     => 30,
                 'redirection' => 5,
                 'httpversion' => '1.0',
                 'blocking'    => $blocking,
                 'headers'     => $headers,
-                'body'        => array_merge( $params, array( 'client' => $this->version ) ),
-                'cookies'     => array(),
-            )
+                'body'        => array_merge( $params, [ 'client' => $this->version ] ),
+                'cookies'     => [],
+            ]
         );
 
         return $response;
@@ -247,10 +252,10 @@ class Client {
     /**
      * Check if the current server is localhost
      *
-     * @return boolean
+     * @return bool
      */
     public function is_local_server() {
-        $is_local = isset( $_SERVER['REMOTE_ADDR'] ) && in_array( $_SERVER['REMOTE_ADDR'], array( '127.0.0.1', '::1' ), true );
+        $is_local = isset( $_SERVER['REMOTE_ADDR'] ) && in_array( $_SERVER['REMOTE_ADDR'], [ '127.0.0.1', '::1' ], true );
 
         return apply_filters( 'appsero_is_local', $is_local );
     }
