@@ -426,8 +426,8 @@ class Insights {
             return;
         }
 
-        $optin_url  = add_query_arg( wp_nonce_url( $this->client->slug . '_tracker_optin', '_wpnonce' ), 'true' );
-        $optout_url = add_query_arg( wp_nonce_url( $this->client->slug . '_tracker_optout', '_wpnonce' ), 'true' );
+        $optin_url  = wp_nonce_url(add_query_arg($this->client->slug . '_tracker_optin', 'true'), '_wpnonce');
+        $optout_url = wp_nonce_url(add_query_arg($this->client->slug . '_tracker_optout', 'true'), '_wpnonce');
 
         if ( empty( $this->notice ) ) {
             $notice = sprintf( $this->client->__trans( 'Want to help make <strong>%1$s</strong> even more awesome? Allow %1$s to collect non-sensitive diagnostic data and usage information.' ), $this->client->name );
@@ -462,25 +462,25 @@ class Insights {
      * @return void
      */
     public function handle_optin_optout() {
-        if ( ! isset( $_POST['_wpnonce'] ) ) {
+        if (! isset($_GET['_wpnonce'])) {
             return;
         }
 
-        if ( ! wp_verify_nonce( sanitize_key( $_POST['_wpnonce'] ) ) ) {
+        if (! wp_verify_nonce(sanitize_key($_GET['_wpnonce']), '_wpnonce')) {
             return;
         }
 
-        if ( isset( $_GET['dokan_option'] ) && isset( $_GET[ $this->client->slug . '_tracker_optin' ] ) && $_GET[ $this->client->slug . '_tracker_optin' ] === 'true' ) {
+        if (isset($_GET[ $this->client->slug . '_tracker_optin' ]) && $_GET[ $this->client->slug . '_tracker_optin' ] === 'true') {
             $this->optin();
 
-            wp_safe_redirect( remove_query_arg( $this->client->slug . '_tracker_optin' ) );
+            wp_safe_redirect(remove_query_arg($this->client->slug . '_tracker_optin'));
             exit;
         }
 
-        if ( isset( $_GET[ $this->client->slug . '_tracker_optout' ] ) && isset( $_GET[ $this->client->slug . '_tracker_optout' ] ) && $_GET[ $this->client->slug . '_tracker_optout' ] === 'true' ) {
+        if (isset($_GET[ $this->client->slug . '_tracker_optout' ]) && isset($_GET[ $this->client->slug . '_tracker_optout' ]) && $_GET[ $this->client->slug . '_tracker_optout' ] === 'true') {
             $this->optout();
 
-            wp_safe_redirect( remove_query_arg( $this->client->slug . '_tracker_optout' ) );
+            wp_safe_redirect(remove_query_arg($this->client->slug . '_tracker_optout'));
             exit;
         }
     }
