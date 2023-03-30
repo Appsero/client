@@ -844,7 +844,7 @@ class Insights {
 
         $this->deactivation_modal_styles();
         $reasons        = $this->get_uninstall_reasons();
-        $custom_reasons = apply_filters( 'appsero_custom_deactivation_reasons', [] );
+        $custom_reasons = apply_filters( 'appsero_custom_deactivation_reasons', [], $this->client );
         ?>
 
         <div class="wd-dr-modal" id="<?php echo $this->client->slug; ?>-wd-dr-modal">
