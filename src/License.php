@@ -61,7 +61,7 @@ class License {
     /**
      * Initialize the class
      *
-     * @param Appsero\Client
+     * @param Client $client
      */
     public function __construct( Client $client ) {
         $this->client = $client;
@@ -111,7 +111,7 @@ class License {
     /**
      * Check license
      *
-     * @return bool
+     * @return array
      */
     public function check( $license_key ) {
         $route = 'public/license/' . $this->client->hash . '/check';
@@ -122,7 +122,7 @@ class License {
     /**
      * Active a license
      *
-     * @return bool
+     * @return array
      */
     public function activate( $license_key ) {
         $route = 'public/license/' . $this->client->hash . '/activate';
@@ -133,7 +133,7 @@ class License {
     /**
      * Deactivate a license
      *
-     * @return bool
+     * @return array
      */
     public function deactivate( $license_key ) {
         $route = 'public/license/' . $this->client->hash . '/deactivate';
@@ -187,7 +187,7 @@ class License {
     public function refresh_license_api() {
         $this->check_license_status();
 
-        return wp_send_json(
+        wp_send_json_success(
             [
                 'message' => 'License refreshed successfully.',
             ],
@@ -244,8 +244,15 @@ class License {
      * License menu output
      */
     public function menu_output() {
-        // process form data is submitted
-        $this->license_form_submit();
+        // process form data if submitted
+        if ( isset( $_POST['_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_nonce'] ) ), $this->client->name ) ) {
+            $form_data = [
+                '_nonce' => sanitize_key( wp_unslash( $_POST['_nonce'] ) ),
+                'action' => isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : '',
+                'license_key' => isset( $_POST['license_key'] ) ? sanitize_text_field( wp_unslash( $_POST['license_key'] ) ) : '',
+            ];
+            $this->license_form_submit( $form_data );
+        }
 
         $license = $this->get_license();
         $action  = ( $license && isset( $license['status'] ) && 'activate' === $license['status'] ) ? 'deactive' : 'active';
@@ -302,12 +309,12 @@ class License {
     /**
      * License form submit
      */
-    public function license_form_submit() {
-        if ( ! isset( $_POST['_nonce'] ) ) {
+    public function license_form_submit( $form_data = array() ) {
+        if ( ! isset( $form_data['_nonce'] ) ) {
             return;
         }
 
-        if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_nonce'] ) ), $this->client->name ) ) {
+        if ( ! wp_verify_nonce( sanitize_key( wp_unslash( $form_data['_nonce'] ) ), $this->client->name ) ) {
             $this->error = $this->client->__trans( 'Nonce vefification failed.' );
 
             return;
@@ -319,8 +326,8 @@ class License {
             return;
         }
 
-        $license_key = isset( $_POST['license_key'] ) ? sanitize_text_field( wp_unslash( $_POST['license_key'] ) ) : '';
-        $action      = isset( $_POST['_action'] ) ? sanitize_text_field( wp_unslash( $_POST['_action'] ) ) : '';
+        $license_key = ! empty( $form_data['license_key'] ) ? sanitize_text_field( wp_unslash( $form_data['license_key'] ) ) : '';
+        $action      = ! empty( $form_data['_action'] ) ? sanitize_text_field( wp_unslash( $form_data['_action'] ) ) : '';
 
         switch ( $action ) {
             case 'active':
