@@ -1,5 +1,5 @@
 # AppSero Client
-### Version 1.2.3
+### Version 1.2.4
 
 - [Installation](#installation)
 - [Insights](#insights)

@@ -430,7 +430,7 @@ class Insights {
         $optout_url = wp_nonce_url( add_query_arg( $this->client->slug . '_tracker_optout', 'true' ), '_wpnonce' );
 
         if ( empty( $this->notice ) ) {
-            $notice = sprintf( $this->client->__trans( 'Want to help make <strong>%1$s</strong> even more awesome? Allow %1$s to collect non-sensitive diagnostic data and usage information.' ), $this->client->name );
+            $notice = sprintf( $this->client->__trans( 'Want to help make <strong>%1$s</strong> even more awesome? Allow %1$s to collect diagnostic data and usage information.' ), $this->client->name );
         } else {
             $notice = $this->notice;
         }
@@ -438,7 +438,7 @@ class Insights {
         $policy_url = 'https://appsero.com/privacy-policy/';
 
         $notice .= ' (<a class="' . $this->client->slug . '-insights-data-we-collect" href="#">' . $this->client->__trans( 'what we collect' ) . '</a>)';
-        $notice .= '<p class="description" style="display:none;">' . implode( ', ', $this->data_we_collect() ) . '. No sensitive data is tracked. ';
+        $notice .= '<p class="description" style="display:none;">' . implode( ', ', $this->data_we_collect() ) . '. ';
         $notice .= 'We are using Appsero to collect your data. <a href="' . $policy_url . '" target="_blank">Learn more</a> about how Appsero collects and handle your data.</p>';
 
         echo '<div class="updated"><p>';
