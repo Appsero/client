@@ -387,7 +387,7 @@ class Insights {
         $policy_url = 'https://' . 'appsero.com/privacy-policy/';
 
         $notice .= ' (<a class="' . $this->client->slug . '-insights-data-we-collect" href="#">' . $this->client->__trans( 'what we collect' ) . '</a>)';
-        $notice .= '<p class="description" style="display:none;">' . implode( ', ', $this->data_we_collect() ) . '. No sensitive data is tracked. ';
+        $notice .= '<p class="description" style="display:none;">' . implode( ', ', $this->data_we_collect() ) . '. ';
         $notice .= 'We are using Appsero to collect your data. <a href="' . $policy_url . '">Learn more</a> about how Appsero collects and handle your data.</p>';
 
         echo '<div class="updated"><p>';
