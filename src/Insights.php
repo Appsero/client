@@ -817,6 +817,7 @@ class Insights {
             wp_send_json_error( 'You are not allowed for this task' );
         }
 
+        $data                = $this->get_tracking_data();
         $data['reason_id']   = sanitize_text_field( wp_unslash( $_POST['reason_id'] ) );
         $data['reason_info'] = isset( $_REQUEST['reason_info'] ) ? trim( sanitize_text_field( wp_unslash( $_REQUEST['reason_info'] ) ) ) : '';
 
