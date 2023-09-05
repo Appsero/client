@@ -149,10 +149,13 @@ class Insights
     public function init_plugin()
     {
         // plugin deactivate popup
-        if (!$this->is_local_server()) {
-            add_filter('plugin_action_links_' . $this->client->basename, [$this, 'plugin_action_links']);
-            add_action('admin_footer', [$this, 'deactivate_scripts']);
-        }
+        //        if ( ! $this->is_local_server() ) {
+        //            add_filter( 'plugin_action_links_' . $this->client->basename, [ $this, 'plugin_action_links' ] );
+        //            add_action( 'admin_footer', [ $this, 'deactivate_scripts' ] );
+        //        }
+
+        add_filter('plugin_action_links_' . $this->client->basename, [$this, 'plugin_action_links']);
+        add_action('admin_footer', [$this, 'deactivate_scripts']);
 
         $this->init_common();
 
@@ -444,9 +447,9 @@ class Insights
         }
 
         // don't show tracking if a local server
-        if ($this->is_local_server()) {
-            return;
-        }
+        //        if ( $this->is_local_server() ) {
+        //            return;
+        //        }
 
         $optin_url  = wp_nonce_url(add_query_arg($this->client->slug . '_tracker_optin', 'true'), '_wpnonce');
         $optout_url = wp_nonce_url(add_query_arg($this->client->slug . '_tracker_optout', 'true'), '_wpnonce');
