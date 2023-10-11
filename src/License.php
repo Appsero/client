@@ -609,7 +609,7 @@ class License {
             <?php if ( $license && $license['key'] ) { ?>
             <form method="post" class="appsero-license-right-form" novalidate="novalidate" spellcheck="false">
                 <input type="hidden" name="_action" value="refresh">
-                <input type="hidden" name="_appsero_license_nonce" value="<?php echo wp_create_nonce( $this->client->name ); ?>">
+                <input type="hidden" name="_nonce" value="<?php echo wp_create_nonce( $this->client->name ); ?>">
                 <button type="submit" name="submit" class="appsero-license-refresh-button">
                     <span class="dashicons dashicons-update"></span>
                     <?php echo $this->client->__trans( 'Refresh License' ); ?>
