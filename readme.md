@@ -1,5 +1,5 @@
 # AppSero Client
-### Version 1.2.5
+### Version 1.3.0
 
 - [Installation](#installation)
 - [Insights](#insights)
@@ -78,9 +78,6 @@ function appsero_init_tracker_appsero_test() {
     // Active insights
     $client->insights()->init();
 
-    // Active automatic updater
-    $client->updater();
-
     // Active license page and checker
     $args = array(
         'type'       => 'options',
@@ -98,6 +95,10 @@ Make sure you call this function directly, never use any action hook to call thi
 
 > For plugins example code that needs to be used on your main plugin file.
 > For themes example code that needs to be used on your themes `functions.php` file.
+
+## Using the Updater (to manage Pro plugin updates)
+> By default the Appsero client doesn't include Updater functionalities in this client. If you want to manage updates for your premium plugins, please include [the Updater](https://github.com/Appsero/updater) separately inside your product
+
 
 ## More Usage
 
