@@ -14,7 +14,7 @@ class Client {
      *
      * @var string
      */
-    public $version = '1.4.0';
+    public $version = '2.0.0';
 
     /**
      * Hash identifier of the plugin
@@ -85,14 +85,6 @@ class Client {
      */
     private $insights;
 
-
-    /**
-     * The Object of Updater Class
-     *
-     * @var object
-     */
-    private $updater;
-
     /**
      * The Object of License Class
      *
@@ -133,26 +125,6 @@ class Client {
         $this->insights = new Insights( $this );
 
         return $this->insights;
-    }
-
-    /**
-     * Initialize plugin/theme updater
-     *
-     * @return Appsero\Updater
-     */
-    public function updater() {
-        if ( ! class_exists( __NAMESPACE__ . '\Updater' ) ) {
-            require_once __DIR__ . '/Updater.php';
-        }
-
-        // if already instantiated, return the cached one
-        if ( $this->updater ) {
-            return $this->updater;
-        }
-
-        $this->updater = new Updater( $this );
-
-        return $this->updater;
     }
 
     /**
