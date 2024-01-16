@@ -496,6 +496,10 @@ class Insights
             return;
         }
 
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
         if (isset($_GET[$this->client->slug . '_tracker_optin']) && $_GET[$this->client->slug . '_tracker_optin'] === 'true') {
             $this->optin();
 
