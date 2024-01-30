@@ -139,7 +139,7 @@ class Client {
         }
 
         // show deprecated notice
-        _deprecated_function( __CLASS__ . '::updater', '2.0', '\Appsero\Updater::init($client);, for more details please visit: https://github.com/Appsero/updater' );
+        _deprecated_function( __CLASS__ . '::updater', '2.0', '\Appsero\Updater::init($client);, for more details please visit: https://appsero.com/docs/appsero-developers-guide/appsero-client/appsero-sdk-updater-changes/' );
 
         // initialize the new updater
         if ( method_exists( '\Appsero\Updater', 'init' ) ) {
