@@ -139,7 +139,7 @@ class Client {
         }
 
         // show deprecated notice
-        _deprecated_function( __CLASS__ . '::updater', '2.0', '\Appsero\Updater::init, for more details please visit: https://app.getwemail.io/campaigns/94eef570-bc95-448f-9178-1386f009b2d9' );
+        _deprecated_function( __CLASS__ . '::updater', '2.0', '\Appsero\Updater::init($client);, for more details please visit: https://github.com/Appsero/updater' );
 
         // initialize the new updater
         if ( method_exists( '\Appsero\Updater', 'init' ) ) {
