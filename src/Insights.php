@@ -488,31 +488,95 @@ class Insights
      */
     public function handle_optin_optout()
     {
-        if (!isset($_GET['_wpnonce'])) {
+        if (! $this->is_valid_request() || ! $this->has_manage_options_capability()) {
             return;
         }
 
-        if (!wp_verify_nonce(sanitize_key($_GET['_wpnonce']), '_wpnonce')) {
-            return;
-        }
-
-        if (!current_user_can('manage_options')) {
-            return;
-        }
-
-        if (isset($_GET[$this->client->slug . '_tracker_optin']) && $_GET[$this->client->slug . '_tracker_optin'] === 'true') {
+        if ($this->is_optin_request()) {
             $this->optin();
-
-            wp_safe_redirect(remove_query_arg($this->client->slug . '_tracker_optin'));
-            exit;
+            $this->handle_redirection($this->client->slug . '_tracker_optin');
         }
 
-        if (isset($_GET[$this->client->slug . '_tracker_optout']) && isset($_GET[$this->client->slug . '_tracker_optout']) && $_GET[$this->client->slug . '_tracker_optout'] === 'true') {
+        if ($this->is_optout_request()) {
             $this->optout();
-
-            wp_safe_redirect(remove_query_arg($this->client->slug . '_tracker_optout'));
-            exit;
+            $this->handle_redirection($this->client->slug . '_tracker_optout');
         }
+    }
+
+    /**
+     * Validate the request nonce.
+     *
+     * @return bool
+     */
+    private function is_valid_request()
+    {
+        return isset($_GET['_wpnonce']) &&
+            wp_verify_nonce(sanitize_key($_GET['_wpnonce']), '_wpnonce');
+    }
+
+    /**
+     * Check if the current user has manage options capability.
+     *
+     * @return bool
+     */
+    private function has_manage_options_capability()
+    {
+        return current_user_can('manage_options');
+    }
+
+    /**
+     * Check if the current request is for opt-in.
+     *
+     * @return bool
+     */
+    private function is_optin_request()
+    {
+        return isset($_GET[$this->client->slug . '_tracker_optin']) && $_GET[$this->client->slug . '_tracker_optin'] === 'true';
+    }
+
+    /**
+     * Check if the current request is for opt-out.
+     *
+     * @return bool
+     */
+    private function is_optout_request()
+    {
+        return isset($_GET[$this->client->slug . '_tracker_optout']) && $_GET[$this->client->slug . '_tracker_optout'] === 'true';
+    }
+
+    /**
+     * Handle redirection after opt-in/opt-out actions.
+     *
+     * @param string $param The query parameter to remove.
+     */
+    private function handle_redirection($param)
+    {
+        if ($this->is_inaccessible_page()) {
+            wp_safe_redirect(admin_url());
+        } else {
+            wp_safe_redirect(remove_query_arg($param));
+        }
+        exit;
+    }
+
+    /**
+     * Check if the current page is updater.php or similar inaccessible pages.
+     *
+     * @return bool
+     */
+    private function is_inaccessible_page()
+    {
+        $inaccessible_pages = [
+            '/wp-admin/update.php', // Add similar inaccessible PHP files here
+        ];
+    
+        foreach ($inaccessible_pages as $page) {
+            if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], $page) !== false) {
+                return true;
+            }
+        }
+    
+        return false;
     }
 
     /**
