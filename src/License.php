@@ -2,6 +2,8 @@
 
 namespace Appsero;
 
+use WP_Error;
+
 /**
  * Appsero License Checker
  *
@@ -144,7 +146,7 @@ class License {
     /**
      * Send common request
      *
-     * @return array
+     * @return array|WP_Error
      */
     protected function send_request( $license_key, $route ) {
         $params = [
@@ -156,19 +158,13 @@ class License {
         $response = $this->client->send_request( $params, $route, true );
 
         if ( is_wp_error( $response ) ) {
-            return [
-                'success' => false,
-                'error'   => $response->get_error_message(),
-            ];
+            return $response;
         }
 
         $response = json_decode( wp_remote_retrieve_body( $response ), true );
 
         if ( empty( $response ) || isset( $response['exception'] ) ) {
-            return [
-                'success' => false,
-                'error'   => $this->client->__trans( 'Unknown error occurred, Please try again.' ),
-            ];
+            return new WP_Error( 'invalid-json-error', $this->client->__trans( 'Unknown error occurred, Please try again.' ) );
         }
 
         if ( isset( $response['errors'] ) && isset( $response['errors']['license_key'] ) ) {
@@ -186,6 +182,15 @@ class License {
      */
     public function refresh_license_api() {
         $this->check_license_status();
+
+        if ( ! empty( $this->error ) ) {
+            wp_send_json_error(
+                [
+                    'message' => $this->error,
+                ],
+                400
+            );
+        }
 
         wp_send_json_success(
             [
@@ -353,7 +358,9 @@ class License {
         if ( isset( $license['key'] ) && ! empty( $license['key'] ) ) {
             $response = $this->check( $license['key'] );
 
-            if ( isset( $response['success'] ) && $response['success'] ) {
+            if ( is_wp_error( $response ) ) {
+                $this->error = $response->get_error_message();
+            } elseif ( isset( $response['success'] ) && $response['success'] ) {
                 $license['status']           = 'activate';
                 $license['remaining']        = $response['remaining'];
                 $license['activation_limit'] = $response['activation_limit'];
@@ -633,7 +640,11 @@ class License {
 
         $response = $this->activate( $license_key );
 
-        if ( ! $response['success'] ) {
+        if ( is_wp_error( $response ) ) {
+            $this->error = $response->get_error_message();
+
+            return;
+        } elseif ( ! $response['success'] ) {
             $this->error = $response['error'] ? $response['error'] : $this->client->__trans( 'Unknown error occurred.' );
 
             return;
@@ -668,6 +679,15 @@ class License {
         }
 
         $response = $this->deactivate( $license['key'] );
+        if ( is_wp_error( $response ) ) {
+            $this->error = $response->get_error_message();
+
+            return;
+        } elseif ( ! $response['success'] ) {
+            $this->error = $response['error'] ? $response['error'] : $this->client->__trans( 'Unknown error occurred.' );
+
+            return;
+        }
 
         $data = [
             'key'    => '',
@@ -675,12 +695,6 @@ class License {
         ];
 
         update_option( $this->option_key, $data, false );
-
-        if ( ! $response['success'] ) {
-            $this->error = $response['error'] ? $response['error'] : $this->client->__trans( 'Unknown error occurred.' );
-
-            return;
-        }
 
         $this->success = $this->client->__trans( 'License deactivated successfully.' );
     }
@@ -699,7 +713,9 @@ class License {
 
         $this->check_license_status();
 
-        $this->success = $this->client->__trans( 'License refreshed successfully.' );
+        if ( empty( $this->error ) ) {
+            $this->success = $this->client->__trans( 'License refreshed successfully.' );
+        }
     }
 
     /**
