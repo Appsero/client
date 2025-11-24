@@ -924,7 +924,7 @@ class Insights {
                     <p class="wd-dr-modal-reasons-bottom">
                         <?php
                         echo sprintf(
-                            $this->client->__trans( 'We share your data with <a href="%1$s" target="_blank">Appsero</a> to troubleshoot problems &amp; make product improvements. <a href="%2$s" target="_blank">Learn more&nearr;</a> &nearr;' ),
+                            $this->client->__trans( 'We share your data with <a href="%1$s" target="_blank">Appsero</a> to troubleshoot problems &amp; make product improvements. <a href="%2$s" target="_blank">Learn more</a> &nearr;' ),
                             esc_url( 'https://appsero.com/' ),
                             esc_url( 'https://appsero.com/privacy-policy' )
                         );
