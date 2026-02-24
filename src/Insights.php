@@ -947,7 +947,7 @@ class Insights {
                     var deactivateLink = '';
 
                     // Open modal
-                    $('#the-list').on('click', 'a.<?php echo $this->client->slug; ?>-deactivate-link', function(e) {
+                    $('#the-list').on('click', 'a#deactivate-<?php echo $this->client->slug; ?>', function(e) {
                         e.preventDefault();
 
                         modal.addClass('modal-active');
