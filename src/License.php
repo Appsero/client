@@ -185,6 +185,10 @@ class License {
      * License Refresh Endpoint
      */
     public function refresh_license_api() {
+        if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( $this->client->name, '_nonce', false ) ) {
+            wp_send_json_error( [ 'message' => 'Unauthorized.' ], 403 );
+        }
+
         $this->check_license_status();
 
         wp_send_json_success(
@@ -367,6 +371,8 @@ class License {
             }
 
             update_option( $this->option_key, $license, false );
+
+            $this->is_valid_license = null;
         }
     }
 
